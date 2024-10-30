@@ -26,6 +26,8 @@ if ! git clone --depth 1 https://github.com/ACMClassCourse-2023/CPU2024/ "$TEMP_
   exit 1
 fi
 
+cp "$TEMP_DIR/upstream/README.md" "$PROJECT_ROOT/docs/requirement.md"
+
 # 对每个目录进行同步
 for dir in "${SYNC_DIRS[@]}"; do
   echo "正在处理 $dir 目录..."
@@ -35,7 +37,7 @@ for dir in "${SYNC_DIRS[@]}"; do
     case "$choice" in
       y|Y)
         echo "正在同步 $dir 目录..."
-        rsync -av --ignore-existing "$TEMP_DIR/upstream/$dir/" "$PROJECT_ROOT/$dir/"
+        rsync -av --update "$TEMP_DIR/upstream/$dir/" "$PROJECT_ROOT/$dir/"
         break
         ;;
       n|N)
