@@ -27,6 +27,7 @@ if ! git clone --depth 1 https://github.com/ACMClassCourse-2023/CPU2024/ "$TEMP_
 fi
 
 cp "$TEMP_DIR/upstream/README.md" "$PROJECT_ROOT/docs/requirement.md"
+cp -r "$TEMP_DIR/upstream/doc" "$PROJECT_ROOT/docs/tutorial"
 
 # 对每个目录进行同步
 for dir in "${SYNC_DIRS[@]}"; do
