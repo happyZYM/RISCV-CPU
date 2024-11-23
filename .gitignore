@@ -3,5 +3,6 @@
 __pycache__/
 /testcase
 /testspace
+/vivado_project
 
 *.log

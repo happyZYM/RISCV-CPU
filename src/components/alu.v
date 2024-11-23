@@ -16,5 +16,20 @@ module Alu(
   output wire                 alu_rdy,
   output wire [ 4:0]          res_ins_id
 );
+always @(posedge clk_in)
+  begin
+    if (rst_in)
+      begin
+      
+      end
+    else if (!rdy_in)
+      begin
+      
+      end
+    else
+      begin
+      
+      end
+  end
 
 endmodule
