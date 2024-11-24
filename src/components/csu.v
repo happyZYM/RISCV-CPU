@@ -3,16 +3,31 @@ module CentralScheduleUnit(
   input  wire                 rst_in,			// reset signal
 	input  wire					        rdy_in,			// ready signal, pause cpu when low
 
-  input  wire                 flush_pipline,
   input  wire                 ins_just_issued,
+  input  wire [31:0]          issue_PC,
   input  wire [31:0]          ins_issued,
+  input  wire [ 6:0]          issue_opcode,
+  input  wire [ 2:0]          issue_funct3,
+  input  wire [ 6:0]          issue_funct7,
+  input  wire [31:0]          issue_imm_val,
+  input  wire [ 5:0]          issue_shamt_val,
+  input  wire [ 4:0]          issue_rs1,
+  input  wire [ 4:0]          issue_rs2,
+  input  wire [ 4:0]          issue_rd,
 
-  output wire [ 6:0]          opcode,
-  output wire [ 2:0]          funct3,
-  output wire [ 6:0]          funct7,
-  output wire [ 4:0]          ins_id,
-  output wire                 alu_task_ready,
-  output wire                 mem_task_ready
+  output wire                 is_executing,
+  output wire                 executing_ins_type, // 0 for alu and 1 for memory operator
+  output wire [ 2:0]          exec_ins_id,
+  output wire [ 6:0]          exec_opcode,
+  output wire [ 2:0]          exec_funct3,
+  output wire [ 6:0]          exec_funct7,
+  output wire [31:0]          exec_imm_val,
+  output wire [ 5:0]          exec_shamt_val,
+  output wire [ 4:0]          exec_rs1,
+  output wire [ 4:0]          exec_rs2,
+  output wire [ 4:0]          exec_rd,
+
+  output wire                 flush_pipline
 );
 
 endmodule

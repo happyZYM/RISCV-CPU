@@ -5,6 +5,7 @@
 依据的RISC-V标准为`20240411`版的（<https://github.com/riscv/riscv-isa-manual/releases/tag/20240411>）。
 
 ## CPU部分架构简图
+[说明文档](docs/design.md)
 ![pic](docs/design.png)
 
 ## 项目结构
