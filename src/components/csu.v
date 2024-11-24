@@ -23,9 +23,10 @@ module CentralScheduleUnit(
   output wire [ 6:0]          exec_funct7,
   output wire [31:0]          exec_imm_val,
   output wire [ 5:0]          exec_shamt_val,
-  output wire [ 4:0]          exec_rs1,
-  output wire [ 4:0]          exec_rs2,
+  output wire [31:0]          exec_rs1,
+  output wire [31:0]          exec_rs2,
   output wire [ 4:0]          exec_rd,
+  output wire [31:0]          exec_PC,
 
   output wire                 flush_pipline
 );
