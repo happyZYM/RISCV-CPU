@@ -28,6 +28,7 @@ fi
 
 cp "$TEMP_DIR/upstream/README.md" "$PROJECT_ROOT/docs/requirement.md"
 cp -r "$TEMP_DIR/upstream/doc" "$PROJECT_ROOT/docs/tutorial"
+cp "$TEMP_DIR/upstream/Makefile" "$PROJECT_ROOT/Makefile"
 
 # 对每个目录进行同步
 for dir in "${SYNC_DIRS[@]}"; do
