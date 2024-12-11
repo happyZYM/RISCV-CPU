@@ -89,7 +89,7 @@ endmodule
 module Decoder(
         input  wire                 clk_in,			// system clock signal
         input  wire                 rst_in,			// reset signal
-        input  wire					        rdy_in,			// ready signal, pause cpu when low
+        input  wire	                rdy_in,	        // ready signal, pause cpu when low
 
         input  wire [31:0]          ins,
 
@@ -104,7 +104,7 @@ module Decoder(
         output wire [31:0]          offset,
         output wire                 is_jalr
     ); // decode and translate compressed instruction
-    wire is_compressed = (ins[1:0] == 2'b11);
+    wire is_compressed = (ins[1:0] != 2'b11);
     wire [ 6:0] opcode_normal;
     wire [ 2:0] funct3_normal;
     wire [ 6:0] funct7_normal;
@@ -129,27 +129,34 @@ module Decoder(
     assign rs1 = is_compressed ? rs1_compressed : rs1_normal;
     assign rs2 = is_compressed ? rs2_compressed : rs2_normal;
     assign rd = is_compressed ? rd_compressed : rd_normal;
-    // TODO: decode normal instruction
+    assign is_jalr = (opcode_normal == 7'b1100111) ? 1'b1 : 1'b0;
+    wire is_branch = (opcode_normal == 7'b1100011);
+    wire [31:0] ins_length = (is_compressed ? 2 : 4);
+    wire [31:0] predicted_offset_if_branch = (imm_val[31] == 1'b1 ? imm_val : ins_length);
+    wire is_jal = (opcode_normal == 7'b1101111);
+    assign offset = is_jal ? imm_val : (is_branch ? predicted_offset_if_branch : ins_length);
+
     // Decode normal (32-bit) instruction based on opcode
     assign opcode_normal = ins[6:0];
 
     // Initialize funct3_normal and funct7_normal based on opcode
+    assign is_r_type_normal = (opcode_normal == 7'b0110011);
+    assign is_i_type_normal = (opcode_normal == 7'b0010011 || opcode_normal == 7'b0000011 || opcode_normal == 7'b1100111);
+    assign is_s_type_normal = (opcode_normal == 7'b0100011);
+    assign is_b_type_normal = (opcode_normal == 7'b1100011);
+    assign is_u_type_normal = (opcode_normal == 7'b0110111 || opcode_normal == 7'b0010111);
+    assign is_j_type_normal = (opcode_normal == 7'b1101111);
     assign funct3_normal =
-           (opcode_normal == 7'b0110011 || // R-type
-            opcode_normal == 7'b0010011 || // I-type
-            opcode_normal == 7'b0000011 || // I-type Load
-            opcode_normal == 7'b1100111 || // I-type JALR
-            opcode_normal == 7'b1100111 || // I-type SYSTEM
-            opcode_normal == 7'b0010111 || // U-type AUIPC
-            opcode_normal == 7'b0110111 || // U-type LUI
-            opcode_normal == 7'b1101111 || // J-type JAL
-            opcode_normal == 7'b1100011)   // B-type Branch
+           (is_r_type_normal ||
+            is_i_type_normal ||
+            is_s_type_normal ||
+            is_b_type_normal)
            ? ins[14:12]
            : 3'b000;
 
     // funct7_normal 仅在 R-type 和部分 I-type 指令中有效
     assign funct7_normal =
-           (opcode_normal == 7'b0110011 || // R-type
+           (is_r_type_normal || // R-type
             (opcode_normal == 7'b0010011 && (ins[14:12] == 3'b101))) // I-type shift
            ? ins[31:25]
            : 7'b0000000;
@@ -163,53 +170,45 @@ module Decoder(
 
     // 选择立即数
     assign imm_val_normal =
-           (opcode_normal == 7'b0010011 || // I-type
-            opcode_normal == 7'b0000011 ||
-            opcode_normal == 7'b1100111)
-           ? imm_i_type :
-           (opcode_normal == 7'b0100011) // S-type
-           ? imm_s_type :
-           (opcode_normal == 7'b1100011) // B-type
-           ? imm_b_type :
-           (opcode_normal == 7'b0110111 || // U-type
-            opcode_normal == 7'b0010111)
-           ? imm_u_type :
-           (opcode_normal == 7'b1101111) // J-type
-           ? imm_j_type :
-           32'b0;
+           (is_i_type_normal)
+           ? imm_i_type
+           : (is_s_type_normal)
+           ? imm_s_type
+           : (is_b_type_normal)
+           ? imm_b_type
+           : (is_u_type_normal)
+           ? imm_u_type
+           : (is_j_type_normal)
+           ? imm_j_type
+           : 32'b0;
 
     // 移位量仅在某些指令中有效
     assign shamt_val_normal =
-           (opcode_normal == 7'b0010011 && ins[14:12] == 3'b101) || // I-type shift
-           (opcode_normal == 7'b0110011 && (ins[14:12] == 3'b001 || ins[14:12] == 3'b101))
+           (opcode_normal == 7'b0010011 && (ins[14:12] == 3'b101 || ins[14:12] == 3'b001))
            ? ins[25:20]
            : 6'b000000;
 
     // 寄存器解码
     assign rd_normal =
-           (opcode_normal == 7'b0110011 || // R-type
-            opcode_normal == 7'b0010011 || // I-type
-            opcode_normal == 7'b0000011 || // I-type Load
-            opcode_normal == 7'b1100111 || // I-type JALR
-            opcode_normal == 7'b0010111 || // U-type AUIPC
-            opcode_normal == 7'b0110111 || // U-type LUI
-            opcode_normal == 7'b1101111)   // J-type JAL
+           (is_r_type_normal ||
+            is_i_type_normal ||
+            is_u_type_normal ||
+            is_j_type_normal)
            ? ins[11:7]
            : 5'b00000;
 
     assign rs1_normal =
-           (opcode_normal == 7'b0110011 || // R-type
-            opcode_normal == 7'b0010011 || // I-type
-            opcode_normal == 7'b0000011 || // I-type Load
-            opcode_normal == 7'b1100111 || // I-type JALR
-            opcode_normal == 7'b1100011)   // B-type Branch
+           (is_r_type_normal ||
+            is_i_type_normal ||
+            is_s_type_normal ||
+            is_b_type_normal)
            ? ins[19:15]
            : 5'b00000;
 
     assign rs2_normal =
-           (opcode_normal == 7'b0110011 || // R-type
-            opcode_normal == 7'b0100011 || // S-type
-            opcode_normal == 7'b1100011)   // B-type Branch
+           (is_r_type_normal ||
+            is_s_type_normal ||
+            is_b_type_normal)
            ? ins[24:20]
            : 5'b00000;
 
@@ -230,6 +229,7 @@ module IssueManager(
 
         output wire                 is_issueing,
         output wire [31:0]          issue_PC,
+        output wire [31:0]          predicted_resulting_PC,
         output wire [31:0]          full_ins,
         output wire [ 6:0]          opcode,
         output wire [ 2:0]          funct3,
@@ -287,6 +287,8 @@ module IssueManager(
                      );
 
     assign is_issueing = have_ins_processing & ins_ready;
+    assign issue_PC = current_PC;
+    assign predicted_resulting_PC = current_PC + current_ins_offset;
 
     always @(posedge clk_in) begin
         if (rst_in) begin

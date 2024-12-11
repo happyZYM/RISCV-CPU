@@ -4,5 +4,7 @@ __pycache__/
 /testcase
 /testspace
 /vivado_project
+/user
+/prj
 
 *.log
