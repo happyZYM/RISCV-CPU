@@ -180,10 +180,10 @@ module cpu(
                     .funct3(csu_exec_funct3),
                     .funct7(csu_exec_funct7),
                     .request_PC(csu_exec_PC),
-                    .alu_res(mo_alu_res),
-                    .alu_rdy(mo_alu_rdy),
-                    .res_ins_id(mo_res_ins_id),
-                    .completed_alu_resulting_PC(mo_completed_alu_resulting_PC)
+                    // .alu_res(mo_alu_res),
+                    // .alu_rdy(mo_alu_rdy),
+                    .res_ins_id(mo_res_ins_id)
+                    // .completed_alu_resulting_PC(mo_completed_alu_resulting_PC)
                 );
 
     RegisterFile rf(

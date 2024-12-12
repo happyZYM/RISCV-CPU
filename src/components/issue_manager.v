@@ -57,7 +57,7 @@ module InstructionCache(
                 is_ready_reg <= 1'b1;
             end
             else if (fetch_conducting) begin
-                request_ins_from_memory_adaptor_reg <= 1'b0;
+                request_ins_from_memory_adaptor_reg <= 1'b0; // the request only last for one cycle, so the memory adaptor should store the request itself
                 if (insfetch_task_done) begin
                     cached_ins_addr[insaddr_to_be_fetched & 8'b11111111] <= insaddr_to_be_fetched;
                     cached_ins_data[insaddr_to_be_fetched & 8'b11111111] <= ins_fetched_from_memory_adaptor;
@@ -528,254 +528,254 @@ module Decoder(
 
     assign opcode_compressed = (is_c_add ? opcode_compressed_c_add :
                                 (is_c_addi ? opcode_compressed_c_addi :
-                                (is_c_addi16sp ? opcode_compressed_c_addi16sp :
-                                (is_c_addi4spn ? opcode_compressed_c_addi4spn :
-                                (is_c_and ? opcode_compressed_c_and :
-                                (is_c_andi ? opcode_compressed_c_andi :
-                                (is_c_beqz ? opcode_compressed_c_beqz :
-                                (is_c_bnez ? opcode_compressed_c_bnez :
-                                (is_c_j ? opcode_compressed_c_j :
-                                (is_c_jal ? opcode_compressed_c_jal :
-                                (is_c_jalr ? opcode_compressed_c_jalr :
-                                (is_c_jr ? opcode_compressed_c_jr :
-                                (is_c_li ? opcode_compressed_c_li :
-                                (is_c_lui ? opcode_compressed_c_lui :
-                                (is_c_lw ? opcode_compressed_c_lw :
-                                (is_c_lwsp ? opcode_compressed_c_lwsp :
-                                (is_c_mv ? opcode_compressed_c_mv :
-                                (is_c_or ? opcode_compressed_c_or :
-                                (is_c_slli ? opcode_compressed_c_slli :
-                                (is_c_srai ? opcode_compressed_c_srai :
-                                (is_c_srli ? opcode_compressed_c_srli :
-                                (is_c_sub ? opcode_compressed_c_sub :
-                                (is_c_sw ? opcode_compressed_c_sw :
-                                (is_c_swsp ? opcode_compressed_c_swsp :
-                                (is_c_xor ? opcode_compressed_c_xor : 7'b0000000)))))))))))))))))))))))));
+                                 (is_c_addi16sp ? opcode_compressed_c_addi16sp :
+                                  (is_c_addi4spn ? opcode_compressed_c_addi4spn :
+                                   (is_c_and ? opcode_compressed_c_and :
+                                    (is_c_andi ? opcode_compressed_c_andi :
+                                     (is_c_beqz ? opcode_compressed_c_beqz :
+                                      (is_c_bnez ? opcode_compressed_c_bnez :
+                                       (is_c_j ? opcode_compressed_c_j :
+                                        (is_c_jal ? opcode_compressed_c_jal :
+                                         (is_c_jalr ? opcode_compressed_c_jalr :
+                                          (is_c_jr ? opcode_compressed_c_jr :
+                                           (is_c_li ? opcode_compressed_c_li :
+                                            (is_c_lui ? opcode_compressed_c_lui :
+                                             (is_c_lw ? opcode_compressed_c_lw :
+                                              (is_c_lwsp ? opcode_compressed_c_lwsp :
+                                               (is_c_mv ? opcode_compressed_c_mv :
+                                                (is_c_or ? opcode_compressed_c_or :
+                                                 (is_c_slli ? opcode_compressed_c_slli :
+                                                  (is_c_srai ? opcode_compressed_c_srai :
+                                                   (is_c_srli ? opcode_compressed_c_srli :
+                                                    (is_c_sub ? opcode_compressed_c_sub :
+                                                     (is_c_sw ? opcode_compressed_c_sw :
+                                                      (is_c_swsp ? opcode_compressed_c_swsp :
+                                                       (is_c_xor ? opcode_compressed_c_xor : 7'b0000000)))))))))))))))))))))))));
     assign funct3_compressed = (is_c_add ? funct3_compressed_c_add :
                                 (is_c_addi ? funct3_compressed_c_addi :
-                                (is_c_addi16sp ? funct3_compressed_c_addi16sp :
-                                (is_c_addi4spn ? funct3_compressed_c_addi4spn :
-                                (is_c_and ? funct3_compressed_c_and :
-                                (is_c_andi ? funct3_compressed_c_andi :
-                                (is_c_beqz ? funct3_compressed_c_beqz :
-                                (is_c_bnez ? funct3_compressed_c_bnez :
-                                (is_c_j ? funct3_compressed_c_j :
-                                (is_c_jal ? funct3_compressed_c_jal :
-                                (is_c_jalr ? funct3_compressed_c_jalr :
-                                (is_c_jr ? funct3_compressed_c_jr :
-                                (is_c_li ? funct3_compressed_c_li :
-                                (is_c_lui ? funct3_compressed_c_lui :
-                                (is_c_lw ? funct3_compressed_c_lw :
-                                (is_c_lwsp ? funct3_compressed_c_lwsp :
-                                (is_c_mv ? funct3_compressed_c_mv :
-                                (is_c_or ? funct3_compressed_c_or :
-                                (is_c_slli ? funct3_compressed_c_slli :
-                                (is_c_srai ? funct3_compressed_c_srai :
-                                (is_c_srli ? funct3_compressed_c_srli :
-                                (is_c_sub ? funct3_compressed_c_sub :
-                                (is_c_sw ? funct3_compressed_c_sw :
-                                (is_c_swsp ? funct3_compressed_c_swsp :
-                                (is_c_xor ? funct3_compressed_c_xor : 3'b000)))))))))))))))))))))))));
+                                 (is_c_addi16sp ? funct3_compressed_c_addi16sp :
+                                  (is_c_addi4spn ? funct3_compressed_c_addi4spn :
+                                   (is_c_and ? funct3_compressed_c_and :
+                                    (is_c_andi ? funct3_compressed_c_andi :
+                                     (is_c_beqz ? funct3_compressed_c_beqz :
+                                      (is_c_bnez ? funct3_compressed_c_bnez :
+                                       (is_c_j ? funct3_compressed_c_j :
+                                        (is_c_jal ? funct3_compressed_c_jal :
+                                         (is_c_jalr ? funct3_compressed_c_jalr :
+                                          (is_c_jr ? funct3_compressed_c_jr :
+                                           (is_c_li ? funct3_compressed_c_li :
+                                            (is_c_lui ? funct3_compressed_c_lui :
+                                             (is_c_lw ? funct3_compressed_c_lw :
+                                              (is_c_lwsp ? funct3_compressed_c_lwsp :
+                                               (is_c_mv ? funct3_compressed_c_mv :
+                                                (is_c_or ? funct3_compressed_c_or :
+                                                 (is_c_slli ? funct3_compressed_c_slli :
+                                                  (is_c_srai ? funct3_compressed_c_srai :
+                                                   (is_c_srli ? funct3_compressed_c_srli :
+                                                    (is_c_sub ? funct3_compressed_c_sub :
+                                                     (is_c_sw ? funct3_compressed_c_sw :
+                                                      (is_c_swsp ? funct3_compressed_c_swsp :
+                                                       (is_c_xor ? funct3_compressed_c_xor : 3'b000)))))))))))))))))))))))));
     assign funct7_compressed = (is_c_add ? funct7_compressed_c_add :
                                 (is_c_addi ? funct7_compressed_c_addi :
-                                (is_c_addi16sp ? funct7_compressed_c_addi16sp :
-                                (is_c_addi4spn ? funct7_compressed_c_addi4spn :
-                                (is_c_and ? funct7_compressed_c_and :
-                                (is_c_andi ? funct7_compressed_c_andi :
-                                (is_c_beqz ? funct7_compressed_c_beqz :
-                                (is_c_bnez ? funct7_compressed_c_bnez :
-                                (is_c_j ? funct7_compressed_c_j :
-                                (is_c_jal ? funct7_compressed_c_jal :
-                                (is_c_jalr ? funct7_compressed_c_jalr :
-                                (is_c_jr ? funct7_compressed_c_jr :
-                                (is_c_li ? funct7_compressed_c_li :
-                                (is_c_lui ? funct7_compressed_c_lui :
-                                (is_c_lw ? funct7_compressed_c_lw :
-                                (is_c_lwsp ? funct7_compressed_c_lwsp :
-                                (is_c_mv ? funct7_compressed_c_mv :
-                                (is_c_or ? funct7_compressed_c_or :
-                                (is_c_slli ? funct7_compressed_c_slli :
-                                (is_c_srai ? funct7_compressed_c_srai :
-                                (is_c_srli ? funct7_compressed_c_srli :
-                                (is_c_sub ? funct7_compressed_c_sub :
-                                (is_c_sw ? funct7_compressed_c_sw :
-                                (is_c_swsp ? funct7_compressed_c_swsp :
-                                (is_c_xor ? funct7_compressed_c_xor : 7'b0000000)))))))))))))))))))))))));
+                                 (is_c_addi16sp ? funct7_compressed_c_addi16sp :
+                                  (is_c_addi4spn ? funct7_compressed_c_addi4spn :
+                                   (is_c_and ? funct7_compressed_c_and :
+                                    (is_c_andi ? funct7_compressed_c_andi :
+                                     (is_c_beqz ? funct7_compressed_c_beqz :
+                                      (is_c_bnez ? funct7_compressed_c_bnez :
+                                       (is_c_j ? funct7_compressed_c_j :
+                                        (is_c_jal ? funct7_compressed_c_jal :
+                                         (is_c_jalr ? funct7_compressed_c_jalr :
+                                          (is_c_jr ? funct7_compressed_c_jr :
+                                           (is_c_li ? funct7_compressed_c_li :
+                                            (is_c_lui ? funct7_compressed_c_lui :
+                                             (is_c_lw ? funct7_compressed_c_lw :
+                                              (is_c_lwsp ? funct7_compressed_c_lwsp :
+                                               (is_c_mv ? funct7_compressed_c_mv :
+                                                (is_c_or ? funct7_compressed_c_or :
+                                                 (is_c_slli ? funct7_compressed_c_slli :
+                                                  (is_c_srai ? funct7_compressed_c_srai :
+                                                   (is_c_srli ? funct7_compressed_c_srli :
+                                                    (is_c_sub ? funct7_compressed_c_sub :
+                                                     (is_c_sw ? funct7_compressed_c_sw :
+                                                      (is_c_swsp ? funct7_compressed_c_swsp :
+                                                       (is_c_xor ? funct7_compressed_c_xor : 7'b0000000)))))))))))))))))))))))));
     assign imm_val_compressed = (is_c_add ? imm_val_compressed_c_add :
-                                (is_c_addi ? imm_val_compressed_c_addi :
-                                (is_c_addi16sp ? imm_val_compressed_c_addi16sp :
-                                (is_c_addi4spn ? imm_val_compressed_c_addi4spn :
-                                (is_c_and ? imm_val_compressed_c_and :
-                                (is_c_andi ? imm_val_compressed_c_andi :
-                                (is_c_beqz ? imm_val_compressed_c_beqz :
-                                (is_c_bnez ? imm_val_compressed_c_bnez :
-                                (is_c_j ? imm_val_compressed_c_j :
-                                (is_c_jal ? imm_val_compressed_c_jal :
-                                (is_c_jalr ? imm_val_compressed_c_jalr :
-                                (is_c_jr ? imm_val_compressed_c_jr :
-                                (is_c_li ? imm_val_compressed_c_li :
-                                (is_c_lui ? imm_val_compressed_c_lui :
-                                (is_c_lw ? imm_val_compressed_c_lw :
-                                (is_c_lwsp ? imm_val_compressed_c_lwsp :
-                                (is_c_mv ? imm_val_compressed_c_mv :
-                                (is_c_or ? imm_val_compressed_c_or :
-                                (is_c_slli ? imm_val_compressed_c_slli :
-                                (is_c_srai ? imm_val_compressed_c_srai :
-                                (is_c_srli ? imm_val_compressed_c_srli :
-                                (is_c_sub ? imm_val_compressed_c_sub :
-                                (is_c_sw ? imm_val_compressed_c_sw :
-                                (is_c_swsp ? imm_val_compressed_c_swsp :
-                                (is_c_xor ? imm_val_compressed_c_xor : 32'b0)))))))))))))))))))))))));
+                                 (is_c_addi ? imm_val_compressed_c_addi :
+                                  (is_c_addi16sp ? imm_val_compressed_c_addi16sp :
+                                   (is_c_addi4spn ? imm_val_compressed_c_addi4spn :
+                                    (is_c_and ? imm_val_compressed_c_and :
+                                     (is_c_andi ? imm_val_compressed_c_andi :
+                                      (is_c_beqz ? imm_val_compressed_c_beqz :
+                                       (is_c_bnez ? imm_val_compressed_c_bnez :
+                                        (is_c_j ? imm_val_compressed_c_j :
+                                         (is_c_jal ? imm_val_compressed_c_jal :
+                                          (is_c_jalr ? imm_val_compressed_c_jalr :
+                                           (is_c_jr ? imm_val_compressed_c_jr :
+                                            (is_c_li ? imm_val_compressed_c_li :
+                                             (is_c_lui ? imm_val_compressed_c_lui :
+                                              (is_c_lw ? imm_val_compressed_c_lw :
+                                               (is_c_lwsp ? imm_val_compressed_c_lwsp :
+                                                (is_c_mv ? imm_val_compressed_c_mv :
+                                                 (is_c_or ? imm_val_compressed_c_or :
+                                                  (is_c_slli ? imm_val_compressed_c_slli :
+                                                   (is_c_srai ? imm_val_compressed_c_srai :
+                                                    (is_c_srli ? imm_val_compressed_c_srli :
+                                                     (is_c_sub ? imm_val_compressed_c_sub :
+                                                      (is_c_sw ? imm_val_compressed_c_sw :
+                                                       (is_c_swsp ? imm_val_compressed_c_swsp :
+                                                        (is_c_xor ? imm_val_compressed_c_xor : 32'b0)))))))))))))))))))))))));
     assign shamt_val_compressed = (is_c_add ? shamt_val_compressed_c_add :
-                                (is_c_addi ? shamt_val_compressed_c_addi :
-                                (is_c_addi16sp ? shamt_val_compressed_c_addi16sp :
-                                (is_c_addi4spn ? shamt_val_compressed_c_addi4spn :
-                                (is_c_and ? shamt_val_compressed_c_and :
-                                (is_c_andi ? shamt_val_compressed_c_andi :
-                                (is_c_beqz ? shamt_val_compressed_c_beqz :
-                                (is_c_bnez ? shamt_val_compressed_c_bnez :
-                                (is_c_j ? shamt_val_compressed_c_j :
-                                (is_c_jal ? shamt_val_compressed_c_jal :
-                                (is_c_jalr ? shamt_val_compressed_c_jalr :
-                                (is_c_jr ? shamt_val_compressed_c_jr :
-                                (is_c_li ? shamt_val_compressed_c_li :
-                                (is_c_lui ? shamt_val_compressed_c_lui :
-                                (is_c_lw ? shamt_val_compressed_c_lw :
-                                (is_c_lwsp ? shamt_val_compressed_c_lwsp :
-                                (is_c_mv ? shamt_val_compressed_c_mv :
-                                (is_c_or ? shamt_val_compressed_c_or :
-                                (is_c_slli ? shamt_val_compressed_c_slli :
-                                (is_c_srai ? shamt_val_compressed_c_srai :
-                                (is_c_srli ? shamt_val_compressed_c_srli :
-                                (is_c_sub ? shamt_val_compressed_c_sub :
-                                (is_c_sw ? shamt_val_compressed_c_sw :
-                                (is_c_swsp ? shamt_val_compressed_c_swsp :
-                                (is_c_xor ? shamt_val_compressed_c_xor : 6'b000000)))))))))))))))))))))))));
+                                   (is_c_addi ? shamt_val_compressed_c_addi :
+                                    (is_c_addi16sp ? shamt_val_compressed_c_addi16sp :
+                                     (is_c_addi4spn ? shamt_val_compressed_c_addi4spn :
+                                      (is_c_and ? shamt_val_compressed_c_and :
+                                       (is_c_andi ? shamt_val_compressed_c_andi :
+                                        (is_c_beqz ? shamt_val_compressed_c_beqz :
+                                         (is_c_bnez ? shamt_val_compressed_c_bnez :
+                                          (is_c_j ? shamt_val_compressed_c_j :
+                                           (is_c_jal ? shamt_val_compressed_c_jal :
+                                            (is_c_jalr ? shamt_val_compressed_c_jalr :
+                                             (is_c_jr ? shamt_val_compressed_c_jr :
+                                              (is_c_li ? shamt_val_compressed_c_li :
+                                               (is_c_lui ? shamt_val_compressed_c_lui :
+                                                (is_c_lw ? shamt_val_compressed_c_lw :
+                                                 (is_c_lwsp ? shamt_val_compressed_c_lwsp :
+                                                  (is_c_mv ? shamt_val_compressed_c_mv :
+                                                   (is_c_or ? shamt_val_compressed_c_or :
+                                                    (is_c_slli ? shamt_val_compressed_c_slli :
+                                                     (is_c_srai ? shamt_val_compressed_c_srai :
+                                                      (is_c_srli ? shamt_val_compressed_c_srli :
+                                                       (is_c_sub ? shamt_val_compressed_c_sub :
+                                                        (is_c_sw ? shamt_val_compressed_c_sw :
+                                                         (is_c_swsp ? shamt_val_compressed_c_swsp :
+                                                          (is_c_xor ? shamt_val_compressed_c_xor : 6'b000000)))))))))))))))))))))))));
     assign rs1_compressed = (is_c_add ? rs1_compressed_c_add :
-                                (is_c_addi ? rs1_compressed_c_addi :
-                                (is_c_addi16sp ? rs1_compressed_c_addi16sp :
-                                (is_c_addi4spn ? rs1_compressed_c_addi4spn :
+                             (is_c_addi ? rs1_compressed_c_addi :
+                              (is_c_addi16sp ? rs1_compressed_c_addi16sp :
+                               (is_c_addi4spn ? rs1_compressed_c_addi4spn :
                                 (is_c_and ? rs1_compressed_c_and :
-                                (is_c_andi ? rs1_compressed_c_andi :
-                                (is_c_beqz ? rs1_compressed_c_beqz :
-                                (is_c_bnez ? rs1_compressed_c_bnez :
-                                (is_c_j ? rs1_compressed_c_j :
-                                (is_c_jal ? rs1_compressed_c_jal :
-                                (is_c_jalr ? rs1_compressed_c_jalr :
-                                (is_c_jr ? rs1_compressed_c_jr :
-                                (is_c_li ? rs1_compressed_c_li :
-                                (is_c_lui ? rs1_compressed_c_lui :
-                                (is_c_lw ? rs1_compressed_c_lw :
-                                (is_c_lwsp ? rs1_compressed_c_lwsp :
-                                (is_c_mv ? rs1_compressed_c_mv :
-                                (is_c_or ? rs1_compressed_c_or :
-                                (is_c_slli ? rs1_compressed_c_slli :
-                                (is_c_srai ? rs1_compressed_c_srai :
-                                (is_c_srli ? rs1_compressed_c_srli :
-                                (is_c_sub ? rs1_compressed_c_sub :
-                                (is_c_sw ? rs1_compressed_c_sw :
-                                (is_c_swsp ? rs1_compressed_c_swsp :
-                                (is_c_xor ? rs1_compressed_c_xor : 5'b00000)))))))))))))))))))))))));
+                                 (is_c_andi ? rs1_compressed_c_andi :
+                                  (is_c_beqz ? rs1_compressed_c_beqz :
+                                   (is_c_bnez ? rs1_compressed_c_bnez :
+                                    (is_c_j ? rs1_compressed_c_j :
+                                     (is_c_jal ? rs1_compressed_c_jal :
+                                      (is_c_jalr ? rs1_compressed_c_jalr :
+                                       (is_c_jr ? rs1_compressed_c_jr :
+                                        (is_c_li ? rs1_compressed_c_li :
+                                         (is_c_lui ? rs1_compressed_c_lui :
+                                          (is_c_lw ? rs1_compressed_c_lw :
+                                           (is_c_lwsp ? rs1_compressed_c_lwsp :
+                                            (is_c_mv ? rs1_compressed_c_mv :
+                                             (is_c_or ? rs1_compressed_c_or :
+                                              (is_c_slli ? rs1_compressed_c_slli :
+                                               (is_c_srai ? rs1_compressed_c_srai :
+                                                (is_c_srli ? rs1_compressed_c_srli :
+                                                 (is_c_sub ? rs1_compressed_c_sub :
+                                                  (is_c_sw ? rs1_compressed_c_sw :
+                                                   (is_c_swsp ? rs1_compressed_c_swsp :
+                                                    (is_c_xor ? rs1_compressed_c_xor : 5'b00000)))))))))))))))))))))))));
     assign rs2_compressed = (is_c_add ? rs2_compressed_c_add :
-                                (is_c_addi ? rs2_compressed_c_addi :
-                                (is_c_addi16sp ? rs2_compressed_c_addi16sp :
-                                (is_c_addi4spn ? rs2_compressed_c_addi4spn :
+                             (is_c_addi ? rs2_compressed_c_addi :
+                              (is_c_addi16sp ? rs2_compressed_c_addi16sp :
+                               (is_c_addi4spn ? rs2_compressed_c_addi4spn :
                                 (is_c_and ? rs2_compressed_c_and :
-                                (is_c_andi ? rs2_compressed_c_andi :
-                                (is_c_beqz ? rs2_compressed_c_beqz :
-                                (is_c_bnez ? rs2_compressed_c_bnez :
-                                (is_c_j ? rs2_compressed_c_j :
-                                (is_c_jal ? rs2_compressed_c_jal :
-                                (is_c_jalr ? rs2_compressed_c_jalr :
-                                (is_c_jr ? rs2_compressed_c_jr :
-                                (is_c_li ? rs2_compressed_c_li :
-                                (is_c_lui ? rs2_compressed_c_lui :
-                                (is_c_lw ? rs2_compressed_c_lw :
-                                (is_c_lwsp ? rs2_compressed_c_lwsp :
-                                (is_c_mv ? rs2_compressed_c_mv :
-                                (is_c_or ? rs2_compressed_c_or :
-                                (is_c_slli ? rs2_compressed_c_slli :
-                                (is_c_srai ? rs2_compressed_c_srai :
-                                (is_c_srli ? rs2_compressed_c_srli :
-                                (is_c_sub ? rs2_compressed_c_sub :
-                                (is_c_sw ? rs2_compressed_c_sw :
-                                (is_c_swsp ? rs2_compressed_c_swsp :
-                                (is_c_xor ? rs2_compressed_c_xor : 5'b00000)))))))))))))))))))))))));
+                                 (is_c_andi ? rs2_compressed_c_andi :
+                                  (is_c_beqz ? rs2_compressed_c_beqz :
+                                   (is_c_bnez ? rs2_compressed_c_bnez :
+                                    (is_c_j ? rs2_compressed_c_j :
+                                     (is_c_jal ? rs2_compressed_c_jal :
+                                      (is_c_jalr ? rs2_compressed_c_jalr :
+                                       (is_c_jr ? rs2_compressed_c_jr :
+                                        (is_c_li ? rs2_compressed_c_li :
+                                         (is_c_lui ? rs2_compressed_c_lui :
+                                          (is_c_lw ? rs2_compressed_c_lw :
+                                           (is_c_lwsp ? rs2_compressed_c_lwsp :
+                                            (is_c_mv ? rs2_compressed_c_mv :
+                                             (is_c_or ? rs2_compressed_c_or :
+                                              (is_c_slli ? rs2_compressed_c_slli :
+                                               (is_c_srai ? rs2_compressed_c_srai :
+                                                (is_c_srli ? rs2_compressed_c_srli :
+                                                 (is_c_sub ? rs2_compressed_c_sub :
+                                                  (is_c_sw ? rs2_compressed_c_sw :
+                                                   (is_c_swsp ? rs2_compressed_c_swsp :
+                                                    (is_c_xor ? rs2_compressed_c_xor : 5'b00000)))))))))))))))))))))))));
     assign rd_compressed = (is_c_add ? rd_compressed_c_add :
-                                (is_c_addi ? rd_compressed_c_addi :
-                                (is_c_addi16sp ? rd_compressed_c_addi16sp :
-                                (is_c_addi4spn ? rd_compressed_c_addi4spn :
-                                (is_c_and ? rd_compressed_c_and :
+                            (is_c_addi ? rd_compressed_c_addi :
+                             (is_c_addi16sp ? rd_compressed_c_addi16sp :
+                              (is_c_addi4spn ? rd_compressed_c_addi4spn :
+                               (is_c_and ? rd_compressed_c_and :
                                 (is_c_andi ? rd_compressed_c_andi :
-                                (is_c_beqz ? rd_compressed_c_beqz :
-                                (is_c_bnez ? rd_compressed_c_bnez :
-                                (is_c_j ? rd_compressed_c_j :
-                                (is_c_jal ? rd_compressed_c_jal :
-                                (is_c_jalr ? rd_compressed_c_jalr :
-                                (is_c_jr ? rd_compressed_c_jr :
-                                (is_c_li ? rd_compressed_c_li :
-                                (is_c_lui ? rd_compressed_c_lui :
-                                (is_c_lw ? rd_compressed_c_lw :
-                                (is_c_lwsp ? rd_compressed_c_lwsp :
-                                (is_c_mv ? rd_compressed_c_mv :
-                                (is_c_or ? rd_compressed_c_or :
-                                (is_c_slli ? rd_compressed_c_slli :
-                                (is_c_srai ? rd_compressed_c_srai :
-                                (is_c_srli ? rd_compressed_c_srli :
-                                (is_c_sub ? rd_compressed_c_sub :
-                                (is_c_sw ? rd_compressed_c_sw :
-                                (is_c_swsp ? rd_compressed_c_swsp :
-                                (is_c_xor ? rd_compressed_c_xor : 5'b00000)))))))))))))))))))))))));
+                                 (is_c_beqz ? rd_compressed_c_beqz :
+                                  (is_c_bnez ? rd_compressed_c_bnez :
+                                   (is_c_j ? rd_compressed_c_j :
+                                    (is_c_jal ? rd_compressed_c_jal :
+                                     (is_c_jalr ? rd_compressed_c_jalr :
+                                      (is_c_jr ? rd_compressed_c_jr :
+                                       (is_c_li ? rd_compressed_c_li :
+                                        (is_c_lui ? rd_compressed_c_lui :
+                                         (is_c_lw ? rd_compressed_c_lw :
+                                          (is_c_lwsp ? rd_compressed_c_lwsp :
+                                           (is_c_mv ? rd_compressed_c_mv :
+                                            (is_c_or ? rd_compressed_c_or :
+                                             (is_c_slli ? rd_compressed_c_slli :
+                                              (is_c_srai ? rd_compressed_c_srai :
+                                               (is_c_srli ? rd_compressed_c_srli :
+                                                (is_c_sub ? rd_compressed_c_sub :
+                                                 (is_c_sw ? rd_compressed_c_sw :
+                                                  (is_c_swsp ? rd_compressed_c_swsp :
+                                                   (is_c_xor ? rd_compressed_c_xor : 5'b00000)))))))))))))))))))))))));
     assign is_jalr_compressed = (is_c_add ? is_jalr_compressed_c_add :
-                                (is_c_addi ? is_jalr_compressed_c_addi :
-                                (is_c_addi16sp ? is_jalr_compressed_c_addi16sp :
-                                (is_c_addi4spn ? is_jalr_compressed_c_addi4spn :
-                                (is_c_and ? is_jalr_compressed_c_and :
-                                (is_c_andi ? is_jalr_compressed_c_andi :
-                                (is_c_beqz ? is_jalr_compressed_c_beqz :
-                                (is_c_bnez ? is_jalr_compressed_c_bnez :
-                                (is_c_j ? is_jalr_compressed_c_j :
-                                (is_c_jal ? is_jalr_compressed_c_jal :
-                                (is_c_jalr ? is_jalr_compressed_c_jalr :
-                                (is_c_jr ? is_jalr_compressed_c_jr :
-                                (is_c_li ? is_jalr_compressed_c_li :
-                                (is_c_lui ? is_jalr_compressed_c_lui :
-                                (is_c_lw ? is_jalr_compressed_c_lw :
-                                (is_c_lwsp ? is_jalr_compressed_c_lwsp :
-                                (is_c_mv ? is_jalr_compressed_c_mv :
-                                (is_c_or ? is_jalr_compressed_c_or :
-                                (is_c_slli ? is_jalr_compressed_c_slli :
-                                (is_c_srai ? is_jalr_compressed_c_srai :
-                                (is_c_srli ? is_jalr_compressed_c_srli :
-                                (is_c_sub ? is_jalr_compressed_c_sub :
-                                (is_c_sw ? is_jalr_compressed_c_sw :
-                                (is_c_swsp ? is_jalr_compressed_c_swsp :
-                                (is_c_xor ? is_jalr_compressed_c_xor : 1'b0)))))))))))))))))))))))));
+                                 (is_c_addi ? is_jalr_compressed_c_addi :
+                                  (is_c_addi16sp ? is_jalr_compressed_c_addi16sp :
+                                   (is_c_addi4spn ? is_jalr_compressed_c_addi4spn :
+                                    (is_c_and ? is_jalr_compressed_c_and :
+                                     (is_c_andi ? is_jalr_compressed_c_andi :
+                                      (is_c_beqz ? is_jalr_compressed_c_beqz :
+                                       (is_c_bnez ? is_jalr_compressed_c_bnez :
+                                        (is_c_j ? is_jalr_compressed_c_j :
+                                         (is_c_jal ? is_jalr_compressed_c_jal :
+                                          (is_c_jalr ? is_jalr_compressed_c_jalr :
+                                           (is_c_jr ? is_jalr_compressed_c_jr :
+                                            (is_c_li ? is_jalr_compressed_c_li :
+                                             (is_c_lui ? is_jalr_compressed_c_lui :
+                                              (is_c_lw ? is_jalr_compressed_c_lw :
+                                               (is_c_lwsp ? is_jalr_compressed_c_lwsp :
+                                                (is_c_mv ? is_jalr_compressed_c_mv :
+                                                 (is_c_or ? is_jalr_compressed_c_or :
+                                                  (is_c_slli ? is_jalr_compressed_c_slli :
+                                                   (is_c_srai ? is_jalr_compressed_c_srai :
+                                                    (is_c_srli ? is_jalr_compressed_c_srli :
+                                                     (is_c_sub ? is_jalr_compressed_c_sub :
+                                                      (is_c_sw ? is_jalr_compressed_c_sw :
+                                                       (is_c_swsp ? is_jalr_compressed_c_swsp :
+                                                        (is_c_xor ? is_jalr_compressed_c_xor : 1'b0)))))))))))))))))))))))));
     assign offset_compressed = (is_c_add ? offset_compressed_c_add :
                                 (is_c_addi ? offset_compressed_c_addi :
-                                (is_c_addi16sp ? offset_compressed_c_addi16sp :
-                                (is_c_addi4spn ? offset_compressed_c_addi4spn :
-                                (is_c_and ? offset_compressed_c_and :
-                                (is_c_andi ? offset_compressed_c_andi :
-                                (is_c_beqz ? offset_compressed_c_beqz :
-                                (is_c_bnez ? offset_compressed_c_bnez :
-                                (is_c_j ? offset_compressed_c_j :
-                                (is_c_jal ? offset_compressed_c_jal :
-                                (is_c_jalr ? offset_compressed_c_jalr :
-                                (is_c_jr ? offset_compressed_c_jr :
-                                (is_c_li ? offset_compressed_c_li :
-                                (is_c_lui ? offset_compressed_c_lui :
-                                (is_c_lw ? offset_compressed_c_lw :
-                                (is_c_lwsp ? offset_compressed_c_lwsp :
-                                (is_c_mv ? offset_compressed_c_mv :
-                                (is_c_or ? offset_compressed_c_or :
-                                (is_c_slli ? offset_compressed_c_slli :
-                                (is_c_srai ? offset_compressed_c_srai :
-                                (is_c_srli ? offset_compressed_c_srli :
-                                (is_c_sub ? offset_compressed_c_sub :
-                                (is_c_sw ? offset_compressed_c_sw :
-                                (is_c_swsp ? offset_compressed_c_swsp :
-                                (is_c_xor ? offset_compressed_c_xor : 32'b0)))))))))))))))))))))))));
+                                 (is_c_addi16sp ? offset_compressed_c_addi16sp :
+                                  (is_c_addi4spn ? offset_compressed_c_addi4spn :
+                                   (is_c_and ? offset_compressed_c_and :
+                                    (is_c_andi ? offset_compressed_c_andi :
+                                     (is_c_beqz ? offset_compressed_c_beqz :
+                                      (is_c_bnez ? offset_compressed_c_bnez :
+                                       (is_c_j ? offset_compressed_c_j :
+                                        (is_c_jal ? offset_compressed_c_jal :
+                                         (is_c_jalr ? offset_compressed_c_jalr :
+                                          (is_c_jr ? offset_compressed_c_jr :
+                                           (is_c_li ? offset_compressed_c_li :
+                                            (is_c_lui ? offset_compressed_c_lui :
+                                             (is_c_lw ? offset_compressed_c_lw :
+                                              (is_c_lwsp ? offset_compressed_c_lwsp :
+                                               (is_c_mv ? offset_compressed_c_mv :
+                                                (is_c_or ? offset_compressed_c_or :
+                                                 (is_c_slli ? offset_compressed_c_slli :
+                                                  (is_c_srai ? offset_compressed_c_srai :
+                                                   (is_c_srli ? offset_compressed_c_srli :
+                                                    (is_c_sub ? offset_compressed_c_sub :
+                                                     (is_c_sw ? offset_compressed_c_sw :
+                                                      (is_c_swsp ? offset_compressed_c_swsp :
+                                                       (is_c_xor ? offset_compressed_c_xor : 32'b0)))))))))))))))))))))))));
 endmodule
 
 module IssueManager(

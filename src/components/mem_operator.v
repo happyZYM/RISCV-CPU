@@ -15,11 +15,12 @@ module MemOperator(
         input  wire [ 2:0]          funct3,
         input  wire [ 6:0]          funct7,
         input  wire [31:0]          request_PC,
+        input  wire                 is_compressed_ins,
 
-        output wire [31:0]          alu_res,
-        output wire                 alu_rdy,
+        output wire [31:0]          mo_res,
+        output wire                 mo_rdy,
         output wire [ 2:0]          res_ins_id,
-        output wire [31:0]          completed_alu_resulting_PC // for branch prediction check
+        output wire [31:0]          completed_mo_resulting_PC // for branch prediction check
     );
 
 

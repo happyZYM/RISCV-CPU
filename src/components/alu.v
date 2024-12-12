@@ -15,13 +15,14 @@ module Alu(
         input  wire [ 2:0]          funct3,
         input  wire [ 6:0]          funct7,
         input  wire [31:0]          request_PC,
+        input  wire                 is_compressed_ins,
 
         output wire [31:0]          alu_res,
         output wire                 alu_rdy,
         output wire [ 2:0]          res_ins_id,
         output wire [31:0]          completed_alu_resulting_PC // for branch prediction check
     );
-    wire [ 2:0] ins_length = opcode[1:0] == 3'b11 ? 32'd4 : 32'd2;
+    wire [ 2:0] ins_length = (is_compressed_ins ? 16'd2 : 16'd4);
     reg [31:0] alu_res_reg;
     reg        alu_rdy_reg;
     reg [ 2:0] res_ins_id_reg;
@@ -40,7 +41,7 @@ module Alu(
             alu_rdy_reg <= 1'b0;
         end
         else begin
-            alu_rdy_reg <= 1'b1;
+            alu_rdy_reg <= have_ins;
             res_ins_id_reg <= ins_id;
 
             case ({funct7, funct3, opcode})
