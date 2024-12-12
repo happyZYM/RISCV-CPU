@@ -113,6 +113,8 @@ module Decoder(
     wire [ 4:0] rs1_normal;
     wire [ 4:0] rs2_normal;
     wire [ 4:0] rd_normal;
+    wire is_jalr_normal;
+    wire [31:0] offset_normal;
     wire [ 6:0] opcode_compressed;
     wire [ 2:0] funct3_compressed;
     wire [ 6:0] funct7_compressed;
@@ -121,6 +123,8 @@ module Decoder(
     wire [ 4:0] rs1_compressed;
     wire [ 4:0] rs2_compressed;
     wire [ 4:0] rd_compressed;
+    wire is_jalr_compressed;
+    wire [31:0] offset_compressed;
     assign opcode = is_compressed ? opcode_compressed : opcode_normal;
     assign funct3 = is_compressed ? funct3_compressed : funct3_normal;
     assign funct7 = is_compressed ? funct7_compressed : funct7_normal;
@@ -129,12 +133,14 @@ module Decoder(
     assign rs1 = is_compressed ? rs1_compressed : rs1_normal;
     assign rs2 = is_compressed ? rs2_compressed : rs2_normal;
     assign rd = is_compressed ? rd_compressed : rd_normal;
-    assign is_jalr = (opcode_normal == 7'b1100111) ? 1'b1 : 1'b0;
-    wire is_branch = (opcode_normal == 7'b1100011);
-    wire [31:0] ins_length = (is_compressed ? 2 : 4);
-    wire [31:0] predicted_offset_if_branch = (imm_val[31] == 1'b1 ? imm_val : ins_length);
-    wire is_jal = (opcode_normal == 7'b1101111);
-    assign offset = is_jal ? imm_val : (is_branch ? predicted_offset_if_branch : ins_length);
+    assign is_jalr = is_compressed ? is_jalr_compressed : is_jalr_normal;
+    assign offset = is_compressed ? offset_compressed : offset_normal;
+
+    assign is_jalr_normal = (opcode_normal == 7'b1100111) ? 1'b1 : 1'b0;
+    wire is_branch_normal = (opcode_normal == 7'b1100011);
+    wire [31:0] predicted_offset_if_branch_normal = (imm_val_normal[31] == 1'b1 ? imm_val_normal : 4);
+    wire is_jal_normal = (opcode_normal == 7'b1101111);
+    assign offset_normal = is_jal_normal ? imm_val_normal : (is_branch_normal ? predicted_offset_if_branch_normal : 4);
 
     // Decode normal (32-bit) instruction based on opcode
     assign opcode_normal = ins[6:0];
@@ -213,7 +219,34 @@ module Decoder(
            : 5'b00000;
 
     // TODO: decode compressed instruction
-
+    // compressed instructions supported: `c.addi`，`c.jal`，`c.li`，`c.addi16sp`，`c.lui`，`c.srli`，`c.srai`，`c.andi`，`c.sub`，`c.xor`，`c.or`，`c.and`，`c.j`，`c.beqz`，`c.bnez`，`c.addi4spn`，`c.lw`，`c.sw`，`c.slli`，`c.jr`，`c.mv`，`c.jalr`，`c.add`，`c.lwsp`，`c.swsp`
+    wire [1:0] c_op = ins[1:0];
+    wire [2:0] c_funct3 = ins[15:13];
+    wire is_c_add = (c_op == 2'b10 && c_funct3 == 3'b100 && ins[12] == 1'b1 && ins[11:7] != 5'b00000 && ins[6:2] != 5'b00000);
+    wire is_c_addi = (c_op == 2'b01 && c_funct3 == 3'b000);
+    wire is_addi16sp = (c_op == 2'b01 && c_funct3 == 3'b011 && ins[11:7] == 5'b00010);
+    wire is_addi4spn = (c_op == 2'b00 && c_funct3 == 3'b000);
+    wire is_c_and = (c_op == 2'b01 && c_funct3 == 3'b100 && ins[11:10] == 2'b11 && ins[6:5] == 2'b11);
+    wire is_c_andi = (c_op == 2'b01 && c_funct3 == 3'b100 && ins[11:10] == 2'b10);
+    wire is_c_beqz = (c_op == 2'b01 && c_funct3 == 3'b110);
+    wire is_c_bnez = (c_op == 2'b01 && c_funct3 == 3'b111);
+    wire is_c_j = (c_op == 2'b01 && c_funct3 == 3'b101);
+    wire is_c_jal = (c_op == 2'b01 && c_funct3 == 3'b001);
+    wire is_c_jalr = (c_op == 2'b10 && c_funct3 == 3'b100 && ins[12] == 1'b1 && ins[11:7] != 5'b00000 && ins[6:2] == 5'b00000);
+    wire is_c_jr = (c_op == 2'b10 && c_funct3 == 3'b100 && ins[12] == 1'b0 && ins[11:7] != 5'b00000 && ins[6:2] == 5'b00000);
+    wire is_c_li = (c_op == 2'b01 && c_funct3 == 3'b010);
+    wire is_c_lui = (c_op == 2'b01 && c_funct3 == 3'b011 && ins[11:7] != 5'b00010);
+    wire is_c_lw = (c_op == 2'b00 && c_funct3 == 3'b010);
+    wire is_c_lwsp = (c_op == 2'b10 && c_funct3 == 3'b010);
+    wire is_c_mv = (c_op == 2'b10 && c_funct3 == 3'b100 && ins[12] == 1'b0 && ins[11:7] != 5'b00000 && ins[6:2] != 5'b00000);
+    wire is_c_or = (c_op == 2'b01 && c_funct3 == 3'b100 && ins[11:10] == 2'b11 && ins[6:5] == 2'b10);
+    wire is_c_slli = (c_op == 2'b10 && c_funct3 == 3'b000);
+    wire is_c_srai = (c_op == 2'b01 && c_funct3 == 3'b100 && ins[11:10] == 2'b01);
+    wire is_c_srli = (c_op == 2'b01 && c_funct3 == 3'b100 && ins[11:10] == 2'b00);
+    wire is_c_sub = (c_op == 2'b01 && c_funct3 == 3'b100 && ins[11:10] == 2'b11 && ins[6:5] == 2'b00);
+    wire is_c_sw = (c_op == 2'b00 && c_funct3 == 3'b110);
+    wire is_c_swsp = (c_op == 2'b10 && c_funct3 == 3'b110);
+    wire is_c_xor = (c_op == 2'b01 && c_funct3 == 3'b100 && ins[11:10] == 2'b11 && ins[6:5] == 2'b01);
 endmodule
 
 module IssueManager(
