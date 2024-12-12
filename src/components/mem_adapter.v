@@ -13,7 +13,6 @@ module MemAdapter(
 
         input  wire                 try_start_insfetch_task,
         input  wire [31:0]          insfetch_addr,
-        output wire                 insfetch_task_accepted,
         output wire                 insfetch_task_done,
         output wire [31:0]          insfetch_ins_full,
 

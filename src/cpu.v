@@ -153,7 +153,6 @@ module cpu(
                    .io_buffer_full(io_buffer_full),
                    .try_start_insfetch_task(im_request_ins_from_memory_adaptor),
                    .insfetch_addr(im_insaddr_to_be_fetched_from_memory_adaptor),
-                   .insfetch_task_accepted(ma_insfetch_task_accepted),
                    .insfetch_task_done(ma_insfetch_task_done),
                    .insfetch_ins_full(ma_insfetch_ins_full),
                    .have_mem_access_task(csu_is_executing),

@@ -835,6 +835,8 @@ module IssueManager(
                 .is_jalr(jalr_just_occured),
                 .is_compressed_ins(is_compressed_ins)
             );
+    
+    wire try_fetch = (~(is_waiting_for_jalr|jalr_just_occured)) & issue_space_available & ins_ready;
     InstructionCache cache(
                          .clk_in(clk_in),
                          .rst_in(rst_in),
@@ -844,8 +846,8 @@ module IssueManager(
                          .insfetch_task_done(insfetch_task_done),
                          .request_ins_from_memory_adaptor(request_ins_from_memory_adaptor),
                          .insaddr_to_be_fetched_from_memory_adaptor(insaddr_to_be_fetched_from_memory_adaptor),
-                         .is_reading((~(is_waiting_for_jalr|jalr_just_occured)) & issue_space_available & ins_ready),
-                         .read_addr(current_PC+(have_ins_processing ? current_ins_offset : 0)),
+                         .is_reading(try_fetch),
+                         .read_addr(current_PC+(is_issueing ? current_ins_offset : 0)),
                          .is_ready(ins_ready),
                          .read_data(ins_data)
                      );
@@ -862,7 +864,12 @@ module IssueManager(
         else if (!rdy_in) begin
         end
         else begin
-            have_ins_processing <= (~(is_waiting_for_jalr|jalr_just_occured)) & issue_space_available & ins_ready;
+            if (try_fetch) begin
+                have_ins_processing <= 1'b1;
+            end
+            else if(is_issueing && !try_fetch) begin
+                have_ins_processing <= 1'b0;
+            end
             if (flush_pipline) begin
                 current_PC <= reset_PC_to;
                 is_waiting_for_jalr <= 1'b0;
@@ -872,7 +879,7 @@ module IssueManager(
                 is_waiting_for_jalr <= 1'b0;
             end
             else begin
-                current_PC <= current_PC+(have_ins_processing ? current_ins_offset : 0);
+                current_PC <= current_PC+(is_issueing ? current_ins_offset : 0);
                 is_waiting_for_jalr <= jalr_just_occured;
             end
         end
