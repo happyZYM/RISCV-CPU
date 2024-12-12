@@ -159,7 +159,6 @@ module cpu(
                    .mem_access_addr(csu_exec_PC),
                    .mem_access_rw(csu_executing_ins_type),
                    .mem_access_data(csu_exec_rs2),
-                   .mem_access_task_accepted(ma_mem_access_task_accepted),
                    .mem_access_task_done(ma_mem_access_task_done),
                    .mem_access_data_out(ma_mem_access_data_out)
                );

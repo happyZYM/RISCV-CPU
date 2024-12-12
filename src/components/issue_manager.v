@@ -59,17 +59,17 @@ module InstructionCache(
             else if (fetch_conducting) begin
                 request_ins_from_memory_adaptor_reg <= 1'b0; // the request only last for one cycle, so the memory adaptor should store the request itself
                 if (insfetch_task_done) begin
-                    cached_ins_addr[insaddr_to_be_fetched & 8'b11111111] <= insaddr_to_be_fetched;
-                    cached_ins_data[insaddr_to_be_fetched & 8'b11111111] <= ins_fetched_from_memory_adaptor;
+                    cached_ins_addr[insaddr_to_be_fetched[8:1] & 8'b11111111] <= insaddr_to_be_fetched;
+                    cached_ins_data[insaddr_to_be_fetched[8:1] & 8'b11111111] <= ins_fetched_from_memory_adaptor;
                     fetch_conducting <= 1'b0;
                     is_ready_reg <= 1'b1;
                     read_data_reg <= ins_fetched_from_memory_adaptor;
                 end
             end
             else if (is_reading) begin
-                if (cached_ins_addr[read_addr & 8'b11111111] == read_addr) begin
+                if (cached_ins_addr[read_addr[8:1] & 8'b11111111] == read_addr) begin
                     is_ready_reg <= 1'b1;
-                    read_data_reg <= cached_ins_data[read_addr & 8'b11111111];
+                    read_data_reg <= cached_ins_data[read_addr[8:1] & 8'b11111111];
                     fetch_conducting <= 1'b0;
                     request_ins_from_memory_adaptor_reg <= 1'b0;
                 end
@@ -83,7 +83,6 @@ module InstructionCache(
             end
         end
     end
-
 endmodule
 
 module Decoder(
@@ -835,7 +834,7 @@ module IssueManager(
                 .is_jalr(jalr_just_occured),
                 .is_compressed_ins(is_compressed_ins)
             );
-    
+
     wire try_fetch = (~(is_waiting_for_jalr|jalr_just_occured)) & issue_space_available & ins_ready;
     InstructionCache cache(
                          .clk_in(clk_in),
@@ -880,7 +879,9 @@ module IssueManager(
             end
             else begin
                 current_PC <= current_PC+(is_issueing ? current_ins_offset : 0);
-                is_waiting_for_jalr <= jalr_just_occured;
+                if (is_issueing) begin
+                    is_waiting_for_jalr <= jalr_just_occured;
+                end
             end
         end
     end

@@ -20,7 +20,16 @@ module MemOperator(
         output wire [31:0]          mo_res,
         output wire                 mo_rdy,
         output wire [ 2:0]          res_ins_id,
-        output wire [31:0]          completed_mo_resulting_PC // for branch prediction check
+        output wire [31:0]          completed_mo_resulting_PC, // for branch prediction check
+    
+        output wire                 ma_have_mem_access_task,
+        output wire [31:0]          ma_mem_access_addr,
+        output wire                 ma_mem_access_rw,
+        output wire [1:0]           ma_mem_access_size, // 00 -> 1 byte, 01 -> 2 bytes, 10 -> 4 bytes, 11 -> 8 bytes
+        output wire [31:0]          ma_mem_access_data,
+        input wire                  ma_mem_access_task_done,
+        input wire [31:0]           ma_mem_access_data_out,
+        output wire                 mo_available
     );
 
 

@@ -19,8 +19,8 @@ module MemAdapter(
         input wire                  have_mem_access_task,
         input wire [31:0]           mem_access_addr,
         input wire                  mem_access_rw,
+        input wire [1:0]            mem_access_size, // 00 -> 1 byte, 01 -> 2 bytes, 10 -> 4 bytes, 11 -> 8 bytes
         input wire [31:0]           mem_access_data,
-        output wire                 mem_access_task_accepted,
         output wire                 mem_access_task_done,
         output wire [31:0]          mem_access_data_out
     );

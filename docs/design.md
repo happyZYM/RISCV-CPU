@@ -8,3 +8,7 @@
 - Memory Operator和Instruction Cache争抢Memory使用权时，优先保障Memory Operator
 
 连线方式：`components`目录下的6个文件对应6个实际子模块，没有显式存在的bus，根据参数名字直接连接，`cpu.v`中除了调试代码外，理论上不应该有任何组件。
+
+# 关键点
+- ReserveStation 和 Memory Adapter需要负责维护数据转移瞬间的coherence
+- 保证最大理论吞吐率的关键是被调者需要尽可能提前返回avaibility信号。其中Memory Adapter和Register File不受avaibility信号控制，前者的调用者总是尽可能发送请求，Memory Adapter会接受处理或接受暂存；后者的运行状态是稳定可知的。
