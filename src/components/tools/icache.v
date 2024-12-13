@@ -16,6 +16,8 @@ module InstructionCache(
         output wire                 request_ins_from_memory_adaptor,
         output wire [31:0]          insaddr_to_be_fetched_from_memory_adaptor
     );
+    // Input: This module will not process request during working, also it will store previously fetched instructions
+    // Output: This module will only provide output in one cycle, so the result should be collected immediately when is_ready is high.
 
     wire currently_have_task = (!fetch_conducting) && is_reading;
     wire [31:0] addr = currently_have_task ? read_addr : insaddr_to_be_fetched;

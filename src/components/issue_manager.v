@@ -1,7 +1,7 @@
 module IssueManager(
-        input  wire                 clk_in,			// system clock signal
-        input  wire                 rst_in,			// reset signal
-        input  wire					        rdy_in,			// ready signal, pause cpu when low
+        input  wire                 clk_in,// system clock signal
+        input  wire                 rst_in,// reset signal
+        input  wire                 rdy_in,// ready signal, pause cpu when low
 
         input  wire                 flush_pipline,
         input  wire [31:0]          reset_PC_to,
@@ -9,7 +9,7 @@ module IssueManager(
         input  wire [31:0]          jalr_resulting_PC,
         input  wire                 issue_space_available,
 
-        output wire                 is_issueing,
+        output wire                 is_issueing, // The issued instruction should be immediately processed by CSU
         output wire [31:0]          issue_PC,
         output wire [31:0]          predicted_resulting_PC,
         output wire [31:0]          full_ins,
@@ -29,7 +29,6 @@ module IssueManager(
         output wire [31:0]          insaddr_to_be_fetched_from_memory_adaptor
     );
 
-    wire [31:0] current_ins_to_decode;
     wire [31:0]  current_ins_offset;
     reg [31:0] current_PC;
     reg is_waiting_for_jalr;
