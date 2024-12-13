@@ -95,73 +95,79 @@ module MemAdapter(
         else if (!rdy_in) begin
         end
         else begin
-            if (new_mo_task) begin
-                mo_task_rw <= mem_access_rw;
-                mo_task_addr <= mem_access_addr;
-                mo_data_to_write <= mem_access_data;
-                mo_data_size <= mem_access_size;
+            if (flush_pipline) begin
+                ifetch_task_state <= 8'b0;
+                mo_task_state <= 8'b0;
             end
-            if (new_ifetch_task) begin
-                ifetch_task_addr <= mem_access_addr;
-            end
+            else begin
+                if (new_mo_task) begin
+                    mo_task_rw <= mem_access_rw;
+                    mo_task_addr <= mem_access_addr;
+                    mo_data_to_write <= mem_access_data;
+                    mo_data_size <= mem_access_size;
+                end
+                if (new_ifetch_task) begin
+                    ifetch_task_addr <= mem_access_addr;
+                end
 
-            if (launch_mo_task) begin
-                mo_task_state <= 8'b00000010;
-            end
-            else if (new_mo_task) begin
-                mo_task_state <= 8'b00000001;
-            end
-            if (mo_task_state == 8'b00000010 && mo_last_task_ok) begin
-                if (mo_data_size == 0) begin
+                if (launch_mo_task) begin
+                    mo_task_state <= 8'b00000010;
+                end
+                else if (new_mo_task) begin
+                    mo_task_state <= 8'b00000001;
+                end
+                if (mo_task_state == 8'b00000010 && mo_last_task_ok) begin
+                    if (mo_data_size == 0) begin
+                        mo_task_state <= 8'b00000000;
+                    end
+                    else begin
+                        mo_task_state <= 8'b00000011;
+                        mo_read_byte0_stored <= mem_din;
+                    end
+                end
+                if (mo_task_state == 8'b00000011 && mo_last_task_ok) begin
+                    if (mo_data_size == 2'b01) begin
+                        mo_task_state <= 8'b00000000;
+                    end
+                    else begin
+                        mo_task_state <= 8'b00000100;
+                        mo_read_byte1_stored <= mem_din;
+                    end
+                end
+                if (mo_task_state == 8'b00000100 && mo_last_task_ok) begin
+                    mo_task_state <= 8'b00000101;
+                    mo_read_byte2_stored <= mem_din;
+                end
+                if (mo_task_state == 8'b00000101 && mo_last_task_ok) begin
                     mo_task_state <= 8'b00000000;
                 end
-                else begin
-                    mo_task_state <= 8'b00000011;
-                    mo_read_byte0_stored <= mem_din;
-                end
-            end
-            if (mo_task_state == 8'b00000011 && mo_last_task_ok) begin
-                if (mo_data_size == 2'b01) begin
-                    mo_task_state <= 8'b00000000;
-                end
-                else begin
-                    mo_task_state <= 8'b00000100;
-                    mo_read_byte1_stored <= mem_din;
-                end
-            end
-            if (mo_task_state == 8'b00000100 && mo_last_task_ok) begin
-                mo_task_state <= 8'b00000101;
-                mo_read_byte2_stored <= mem_din;
-            end
-            if (mo_task_state == 8'b00000101 && mo_last_task_ok) begin
-                mo_task_state <= 8'b00000000;
-            end
 
-            if (launch_ifetch_task) begin
-                ifetch_task_state <= 8'b00000010;
-            end
-            else if (new_ifetch_task) begin
-                ifetch_task_state <= 8'b00000001;
-            end
-            if (ifetch_task_state == 8'b00000010) begin
-                ifetch_task_state <= 8'b00000011;
-                ifetch_read_byte0_stored <= mem_din;
-            end
-            if (ifetch_task_state == 8'b00000011) begin
-                if (insfetch_task_done) begin
+                if (launch_ifetch_task) begin
+                    ifetch_task_state <= 8'b00000010;
+                end
+                else if (new_ifetch_task) begin
+                    ifetch_task_state <= 8'b00000001;
+                end
+                if (ifetch_task_state == 8'b00000010) begin
+                    ifetch_task_state <= 8'b00000011;
+                    ifetch_read_byte0_stored <= mem_din;
+                end
+                if (ifetch_task_state == 8'b00000011) begin
+                    if (insfetch_task_done) begin
+                        ifetch_task_state <= 8'b00000000;
+                    end
+                    else begin
+                        ifetch_task_state <= 8'b00000100;
+                        ifetch_read_byte1_stored <= mem_din;
+                    end
+                end
+                if (ifetch_task_state == 8'b00000100) begin
+                    ifetch_task_state <= 8'b00000101;
+                    ifetch_read_byte2_stored <= mem_din;
+                end
+                if (ifetch_task_state == 8'b00000101) begin
                     ifetch_task_state <= 8'b00000000;
                 end
-                else begin
-                    ifetch_task_state <= 8'b00000100;
-                    ifetch_read_byte1_stored <= mem_din;
-                end
-            end
-            if (ifetch_task_state == 8'b00000100) begin
-                ifetch_task_state <= 8'b00000101;
-                ifetch_read_byte2_stored <= mem_din;
-            end
-            if (ifetch_task_state == 8'b00000101) begin
-                ifetch_task_state <= 8'b00000000;
             end
         end
     end
