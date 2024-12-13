@@ -12,3 +12,9 @@
 # 关键点
 - ReserveStation 和 Memory Adapter需要负责维护数据转移瞬间的coherence
 - 保证最大理论吞吐率的关键是被调者需要尽可能提前返回avaibility信号。其中Memory Adapter和Register File不受avaibility信号控制，前者的调用者总是尽可能发送请求，Memory Adapter会接受处理或接受暂存；后者的运行状态是稳定可知的。
+
+# 升级选项
+- 访存本身的乱序
+- dcache
+- 硬件乘法器
+- v拓展

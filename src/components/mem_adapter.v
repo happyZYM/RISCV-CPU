@@ -87,9 +87,6 @@ module MemAdapter(
     assign mem_a = mo_task_running ? mo_mem_a_control : ifetch_task_running ? ifetch_mem_a_control : 32'h0;
     assign mem_wr = mo_task_running ? (mo_task_rw && can_write) : 1'b0;
 
-    always @(*) begin
-    end
-
     always @(posedge clk_in) begin
         if (rst_in) begin
             ifetch_task_state <= 8'b0;

@@ -1,7 +1,7 @@
 module Alu(
-        input  wire                 clk_in,			// system clock signal
-        input  wire                 rst_in,			// reset signal
-        input  wire					        rdy_in,			// ready signal, pause cpu when low
+        input  wire                 clk_in, // system clock signal
+        input  wire                 rst_in, // reset signal
+        input  wire                 rdy_in, // ready signal, pause cpu when low
 
         input  wire                 flush_pipline,
 
@@ -20,31 +20,42 @@ module Alu(
         output wire [31:0]          alu_res,
         output wire                 alu_rdy,
         output wire [ 2:0]          res_ins_id,
-        output wire [31:0]          completed_alu_resulting_PC, // for branch prediction check
-        output wire                 alu_available
+        output wire [31:0]          completed_alu_resulting_PC,
+
+        output  wire                jalr_just_done,
+        output  wire [31:0]         jalr_resulting_PC
     );
     wire [ 2:0] ins_length = (is_compressed_ins ? 16'd2 : 16'd4);
     reg [31:0] alu_res_reg;
     reg        alu_rdy_reg;
     reg [ 2:0] res_ins_id_reg;
     reg [31:0] completed_alu_resulting_PC_reg;
-    assign alu_available = 1'b1; // currently alu is always available
+    reg jalr_just_done_reg;
     assign alu_res = alu_res_reg;
     assign alu_rdy = alu_rdy_reg;
     assign res_ins_id = res_ins_id_reg;
     assign completed_alu_resulting_PC = completed_alu_resulting_PC_reg;
+    assign jalr_just_done = jalr_just_done_reg;
+    assign jalr_resulting_PC = completed_alu_resulting_PC_reg;
     always @(posedge clk_in) begin
         if (rst_in) begin
             alu_rdy_reg <= 1'b0;
             alu_res_reg <= 32'b0;
             completed_alu_resulting_PC_reg <= 32'b0;
+            jalr_just_done_reg <= 1'b0;
         end
         else if (!rdy_in) begin
-            alu_rdy_reg <= 1'b0;
         end
         else begin
             alu_rdy_reg <= have_ins;
             res_ins_id_reg <= ins_id;
+
+            if (opcode == 7'b1100111) begin
+                jalr_just_done_reg <= 1'b1;
+            end
+            else begin
+                jalr_just_done_reg <= 1'b0;
+            end
 
             case ({funct7, funct3, opcode})
                 // LUI
