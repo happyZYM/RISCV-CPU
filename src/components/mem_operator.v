@@ -28,8 +28,7 @@ module MemOperator(
         output wire [1:0]           ma_mem_access_size, // 00 -> 1 byte, 01 -> 2 bytes, 10 -> 4 bytes, 11 -> 8 bytes
         output wire [31:0]          ma_mem_access_data,
         input wire                  ma_mem_access_task_done,
-        input wire [31:0]           ma_mem_access_data_out,
-        output wire                 mo_available
+        input wire [31:0]           ma_mem_access_data_out
     );
 
     assign mo_rdy = ma_mem_access_task_done;
