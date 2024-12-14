@@ -176,6 +176,9 @@ module CentralScheduleUnit(
     assign exec_is_compressed_ins = exec_is_compressed_ins_reg;
 
     wire current_exec_just_done = is_executing_reg && (executing_ins_type_reg ? mo_rdy : alu_rdy);
+    wire [CSU_SIZE_BITS - 1:0] just_done_ins_id = executing_ins_type_reg ? mo_res_ins_id : alu_res_ins_id;
+    wire [31:0] just_done_res = executing_ins_type_reg ? mo_res : alu_res;
+    wire [31:0] just_done_completed_resulting_PC = executing_ins_type_reg ? mo_completed_mo_resulting_PC : alu_completed_alu_resulting_PC;
 
     task initialize_internal_state;
         begin
@@ -310,6 +313,22 @@ module CentralScheduleUnit(
                 if (current_exec_just_done) begin
                     if (!can_submit_for_exec) begin
                         is_executing_reg <= 0;
+                    end
+                    ins_state[just_done_ins_id] <= 3;
+                    ins_rd_val[just_done_ins_id] <= just_done_res;
+                    ins_actual_resulting_PC[just_done_ins_id] <= just_done_completed_resulting_PC;
+                    for (i = 0; i < CSU_SIZE; i = i + 1) begin
+                        if (ins_state[i] == 1 && !ins_rs1_dependency_satified[i] && ins_rs1_depend_on[i] == just_done_ins_id) begin
+                            ins_rs1_dependency_satified[i] <= 1'b1;
+                            ins_rs1_val[i] <= just_done_res;
+                        end
+                        if (ins_state[i] == 1 && !ins_rs2_dependency_satified[i] && ins_rs2_depend_on[i] == just_done_ins_id) begin
+                            ins_rs2_dependency_satified[i] <= 1'b1;
+                            ins_rs2_val[i] <= just_done_res;
+                        end
+                        if (ins_state[i] == 1 && !ins_memrw_dependency_satified[i] && ins_memrw_depend_on[i] == just_done_ins_id) begin
+                            ins_memrw_dependency_satified[i] <= 1'b1;
+                        end
                     end
                 end
                 csu_head <= csu_head_tmp;
