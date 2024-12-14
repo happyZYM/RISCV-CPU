@@ -37,153 +37,151 @@ module Alu(
     assign completed_alu_resulting_PC = completed_alu_resulting_PC_reg;
     assign jalr_just_done = jalr_just_done_reg;
     assign jalr_resulting_PC = completed_alu_resulting_PC_reg;
+    always @(*) begin
+        alu_rdy_reg = have_ins;
+        res_ins_id_reg = ins_id;
+
+        if (opcode == 7'b1100111) begin
+            jalr_just_done_reg = 1'b1;
+        end
+        else begin
+            jalr_just_done_reg = 1'b0;
+        end
+
+        case ({funct7, funct3, opcode})
+            // LUI
+            17'b0000000_000_0110111: begin
+                alu_res_reg = imm_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+
+            // AUIPC
+            17'b0000000_000_0010111: begin
+                alu_res_reg = request_PC + imm_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+
+            // JAL
+            17'b0000000_000_1101111: begin
+                alu_res_reg = request_PC + ins_length;
+                completed_alu_resulting_PC_reg = request_PC + imm_val;
+            end
+
+            // JALR
+            17'b0000000_000_1100111: begin
+                alu_res_reg = request_PC + ins_length;
+                completed_alu_resulting_PC_reg = (rs1_val + imm_val) & ~32'b1;
+            end
+
+            // Branch instructions
+            17'b0000000_000_1100011: begin // BEQ
+                completed_alu_resulting_PC_reg = (rs1_val == rs2_val) ? request_PC + imm_val : request_PC + ins_length;
+            end
+            17'b0000000_001_1100011: begin // BNE
+                completed_alu_resulting_PC_reg = (rs1_val != rs2_val) ? request_PC + imm_val : request_PC + ins_length;
+            end
+            17'b0000000_100_1100011: begin // BLT
+                completed_alu_resulting_PC_reg = ($signed(rs1_val) < $signed(rs2_val)) ? request_PC + imm_val : request_PC + ins_length;
+            end
+            17'b0000000_101_1100011: begin // BGE
+                completed_alu_resulting_PC_reg = ($signed(rs1_val) >= $signed(rs2_val)) ? request_PC + imm_val : request_PC + ins_length;
+            end
+            17'b0000000_110_1100011: begin // BLTU
+                completed_alu_resulting_PC_reg = (rs1_val < rs2_val) ? request_PC + imm_val : request_PC + ins_length;
+            end
+            17'b0000000_111_1100011: begin // BGEU
+                completed_alu_resulting_PC_reg = (rs1_val >= rs2_val) ? request_PC + imm_val : request_PC + ins_length;
+            end
+
+            // I-type ALU operations
+            17'b0000000_000_0010011: begin // ADDI
+                alu_res_reg = rs1_val + imm_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_010_0010011: begin // SLTI
+                alu_res_reg = ($signed(rs1_val) < $signed(imm_val)) ? 32'd1 : 32'd0;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_011_0010011: begin // SLTIU
+                alu_res_reg = (rs1_val < imm_val) ? 32'd1 : 32'd0;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_100_0010011: begin // XORI
+                alu_res_reg = rs1_val ^ imm_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_110_0010011: begin // ORI
+                alu_res_reg = rs1_val | imm_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_111_0010011: begin // ANDI
+                alu_res_reg = rs1_val & imm_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+
+            // Shift operations
+            17'b0000000_001_0010011: begin // SLLI
+                alu_res_reg = rs1_val << shamt_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_101_0010011: begin // SRLI
+                alu_res_reg = rs1_val >> shamt_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0100000_101_0010011: begin // SRAI
+                alu_res_reg = $signed(rs1_val) >>> shamt_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+
+            // R-type ALU operations
+            17'b0000000_000_0110011: begin // ADD
+                alu_res_reg = rs1_val + rs2_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0100000_000_0110011: begin // SUB
+                alu_res_reg = rs1_val - rs2_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_001_0110011: begin // SLL
+                alu_res_reg = rs1_val << (rs2_val[4:0]);
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_010_0110011: begin // SLT
+                alu_res_reg = ($signed(rs1_val) < $signed(rs2_val)) ? 32'd1 : 32'd0;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_011_0110011: begin // SLTU
+                alu_res_reg = (rs1_val < rs2_val) ? 32'd1 : 32'd0;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_100_0110011: begin // XOR
+                alu_res_reg = rs1_val ^ rs2_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_101_0110011: begin // SRL
+                alu_res_reg = rs1_val >> (rs2_val[4:0]);
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0100000_101_0110011: begin // SRA
+                alu_res_reg = $signed(rs1_val) >>> (rs2_val[4:0]);
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_110_0110011: begin // OR
+                alu_res_reg = rs1_val | rs2_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+            17'b0000000_111_0110011: begin // AND
+                alu_res_reg = rs1_val & rs2_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+        endcase
+    end
     always @(posedge clk_in) begin
         if (rst_in) begin
-            alu_rdy_reg <= 1'b0;
-            alu_res_reg <= 32'b0;
-            completed_alu_resulting_PC_reg <= 32'b0;
-            jalr_just_done_reg <= 1'b0;
         end
         else if (!rdy_in) begin
         end
         else begin
-            alu_rdy_reg <= have_ins;
-            res_ins_id_reg <= ins_id;
-
-            if (opcode == 7'b1100111) begin
-                jalr_just_done_reg <= 1'b1;
-            end
-            else begin
-                jalr_just_done_reg <= 1'b0;
-            end
-
-            case ({funct7, funct3, opcode})
-                // LUI
-                17'b0000000_000_0110111: begin
-                    alu_res_reg <= imm_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-
-                // AUIPC
-                17'b0000000_000_0010111: begin
-                    alu_res_reg <= request_PC + imm_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-
-                // JAL
-                17'b0000000_000_1101111: begin
-                    alu_res_reg <= request_PC + ins_length;
-                    completed_alu_resulting_PC_reg <= request_PC + imm_val;
-                end
-
-                // JALR
-                17'b0000000_000_1100111: begin
-                    alu_res_reg <= request_PC + ins_length;
-                    completed_alu_resulting_PC_reg <= (rs1_val + imm_val) & ~32'b1;
-                end
-
-                // Branch instructions
-                17'b0000000_000_1100011: begin // BEQ
-                    completed_alu_resulting_PC_reg <= (rs1_val == rs2_val) ? request_PC + imm_val : request_PC + ins_length;
-                end
-                17'b0000000_001_1100011: begin // BNE
-                    completed_alu_resulting_PC_reg <= (rs1_val != rs2_val) ? request_PC + imm_val : request_PC + ins_length;
-                end
-                17'b0000000_100_1100011: begin // BLT
-                    completed_alu_resulting_PC_reg <= ($signed(rs1_val) < $signed(rs2_val)) ? request_PC + imm_val : request_PC + ins_length;
-                end
-                17'b0000000_101_1100011: begin // BGE
-                    completed_alu_resulting_PC_reg <= ($signed(rs1_val) >= $signed(rs2_val)) ? request_PC + imm_val : request_PC + ins_length;
-                end
-                17'b0000000_110_1100011: begin // BLTU
-                    completed_alu_resulting_PC_reg <= (rs1_val < rs2_val) ? request_PC + imm_val : request_PC + ins_length;
-                end
-                17'b0000000_111_1100011: begin // BGEU
-                    completed_alu_resulting_PC_reg <= (rs1_val >= rs2_val) ? request_PC + imm_val : request_PC + ins_length;
-                end
-
-                // I-type ALU operations
-                17'b0000000_000_0010011: begin // ADDI
-                    alu_res_reg <= rs1_val + imm_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_010_0010011: begin // SLTI
-                    alu_res_reg <= ($signed(rs1_val) < $signed(imm_val)) ? 32'd1 : 32'd0;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_011_0010011: begin // SLTIU
-                    alu_res_reg <= (rs1_val < imm_val) ? 32'd1 : 32'd0;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_100_0010011: begin // XORI
-                    alu_res_reg <= rs1_val ^ imm_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_110_0010011: begin // ORI
-                    alu_res_reg <= rs1_val | imm_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_111_0010011: begin // ANDI
-                    alu_res_reg <= rs1_val & imm_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-
-                // Shift operations
-                17'b0000000_001_0010011: begin // SLLI
-                    alu_res_reg <= rs1_val << shamt_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_101_0010011: begin // SRLI
-                    alu_res_reg <= rs1_val >> shamt_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0100000_101_0010011: begin // SRAI
-                    alu_res_reg <= $signed(rs1_val) >>> shamt_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-
-                // R-type ALU operations
-                17'b0000000_000_0110011: begin // ADD
-                    alu_res_reg <= rs1_val + rs2_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0100000_000_0110011: begin // SUB
-                    alu_res_reg <= rs1_val - rs2_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_001_0110011: begin // SLL
-                    alu_res_reg <= rs1_val << (rs2_val[4:0]);
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_010_0110011: begin // SLT
-                    alu_res_reg <= ($signed(rs1_val) < $signed(rs2_val)) ? 32'd1 : 32'd0;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_011_0110011: begin // SLTU
-                    alu_res_reg <= (rs1_val < rs2_val) ? 32'd1 : 32'd0;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_100_0110011: begin // XOR
-                    alu_res_reg <= rs1_val ^ rs2_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_101_0110011: begin // SRL
-                    alu_res_reg <= rs1_val >> (rs2_val[4:0]);
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0100000_101_0110011: begin // SRA
-                    alu_res_reg <= $signed(rs1_val) >>> (rs2_val[4:0]);
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_110_0110011: begin // OR
-                    alu_res_reg <= rs1_val | rs2_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-                17'b0000000_111_0110011: begin // AND
-                    alu_res_reg <= rs1_val & rs2_val;
-                    completed_alu_resulting_PC_reg <= request_PC + ins_length;
-                end
-            endcase
         end
     end
 
