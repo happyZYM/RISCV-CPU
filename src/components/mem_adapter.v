@@ -30,7 +30,7 @@ module MemAdapter(
     wire new_mo_task = mo_task_state == 0 && have_mem_access_task;
     wire mo_task_pending = (mo_task_state == 1) || new_mo_task;
     wire mo_task_running = (mo_task_state[7:1] != 7'b0000000);
-    wire mo_mem_a_control = mo_task_state == 2 ? mo_task_addr :
+    wire [31:0] mo_mem_a_control = mo_task_state == 2 ? mo_task_addr :
          mo_task_state == 3 ? mo_task_addr + 1 :
          mo_task_state == 4 ? mo_task_addr + 2 :
          mo_task_state == 5 ? mo_task_addr + 3 : 32'h0;
@@ -61,9 +61,9 @@ module MemAdapter(
            is_lh ? mo_task_state == 7'b0000011 :
            is_lb ? mo_task_state == 7'b0000010 : 0;
 
-    wire new_ifetch_task = mo_task_state == 0 && have_mem_access_task;
+    wire new_ifetch_task = ifetch_task_state == 0 && try_start_insfetch_task;
     wire ifetch_task_pending = (ifetch_task_state == 1) || new_ifetch_task;
-    wire ifetch_mem_a_control = ifetch_task_state == 2 ? ifetch_task_addr :
+    wire [31:0] ifetch_mem_a_control = ifetch_task_state == 2 ? ifetch_task_addr :
          ifetch_task_state == 3 ? ifetch_task_addr + 1 :
          ifetch_task_state == 4 ? ifetch_task_addr + 2 :
          ifetch_task_state == 5 ? ifetch_task_addr + 3 : 32'h0;
@@ -107,7 +107,7 @@ module MemAdapter(
                     mo_data_size <= mem_access_size;
                 end
                 if (new_ifetch_task) begin
-                    ifetch_task_addr <= mem_access_addr;
+                    ifetch_task_addr <= insfetch_addr;
                 end
 
                 if (launch_mo_task) begin

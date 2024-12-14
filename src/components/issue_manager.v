@@ -55,6 +55,8 @@ module IssueManager(
                 .is_jalr(jalr_just_occured),
                 .is_compressed_ins(is_compressed_ins)
             );
+    
+    assign full_ins = ins_data;
 
     wire try_fetch = (~is_waiting_for_jalr) & issue_space_available & icache_available;
     InstructionCache cache(
