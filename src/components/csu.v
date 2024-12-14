@@ -53,11 +53,6 @@ module CentralScheduleUnit(
         output  wire [ 4:0]                        rf_rd_reg_id,
         output  wire [31:0]                        rf_rd_val
     ); // This module act as ROB, Reserve Station and Load/Store Buffer
-    // output control
-    reg flush_pipline_out;
-    assign flush_pipline = flush_pipline_out;
-
-
     // internal data
     reg [7:0] ins_count_in_csu;
     assign issue_space_available = (ins_count_in_csu < 8);
@@ -99,12 +94,41 @@ module CentralScheduleUnit(
     assign rf_rd_reg_id = ins_rd[csu_head];
     assign rf_rd_val = ins_rd_val[csu_head];
     wire prediction_failed = (need_commit && (ins_actual_resulting_PC[csu_head] != ins_predicted_resulting_PC[csu_head]));
+    assign flush_pipline = prediction_failed;
+    assign reset_PC_to = ins_actual_resulting_PC[csu_head];
+
+    assign rf_rs1_reg_id = issue_rs1;
+    assign rf_rs2_reg_id = issue_rs2;
+
+    function is_mem_read;
+        input [6:0] opcode;
+        begin
+            is_mem_read = (opcode == 7'b0000011);
+        end
+    endfunction
+
+    function is_mem_write;
+        input [6:0] opcode;
+        begin
+            is_mem_write = (opcode == 7'b0100011);
+        end
+    endfunction
+
+    function ready_for_exec;
+        input [CSU_SIZE_BITS - 1:0] ins_id;
+        begin
+            ready_for_exec = (ins_state[ins_id] == 1)
+                           && ins_rs1_dependency_satified[ins_id]
+                           && ins_rs2_dependency_satified[ins_id]
+                           && ins_memrw_dependency_satified[ins_id]
+                           && ((!is_mem_write(ins_opcode[ins_id])) || ins_id == csu_head);
+        end
+    endfunction
 
     task initialize_internal_state;
         begin
             integer i;
             integer j;
-            flush_pipline_out <= 1'b0;
             ins_count_in_csu <= 8'd0;
             for (i = 0; i < 32; i = i + 1) begin
                 reg_writen[i] <= 1'b0;
@@ -150,28 +174,80 @@ module CentralScheduleUnit(
         reg [CSU_SIZE_BITS - 1:0] csu_head_tmp;
         reg [CSU_SIZE_BITS - 1:0] csu_tail_tmp;
         reg [7:0] ins_count_in_csu_tmp;
+        reg [7:0] memrw_ins_count_tmp;
+        integer i;
+        integer j;
         if (rst_in) begin
             initialize_internal_state;
         end
         else if (!rdy_in) begin
         end
         else begin
-            if (flush_pipline_out) begin
+            if (flush_pipline) begin
                 initialize_internal_state;
             end
             else begin
                 csu_head_tmp = csu_head;
                 csu_tail_tmp = csu_tail;
                 ins_count_in_csu_tmp = ins_count_in_csu;
-                flush_pipline_out <= prediction_failed;
+                memrw_ins_count_tmp = memrw_ins_count;
                 if (need_commit) begin
                     ins_count_in_csu_tmp = ins_count_in_csu_tmp - 1;
                     csu_head_tmp = csu_head_tmp + 1;
                     ins_state[csu_head] <= 8'd0;
+                    if (reg_writen[ins_rd[csu_head]] && !(ins_just_issued && issue_rd == ins_rd[csu_head])) begin
+                        reg_writen[ins_rd[csu_head]] <= 1'b0;
+                        reg_depends_on[ins_rd[csu_head]] <= 3'b000;
+                    end
+                    if (is_mem_read(ins_opcode[csu_head]) || is_mem_write(ins_opcode[csu_head])) begin
+                        memrw_ins_count_tmp = memrw_ins_count_tmp - 1;
+                    end
+                end
+                if (ins_just_issued) begin
+                    ins_count_in_csu_tmp = ins_count_in_csu_tmp + 1;
+                    csu_tail_tmp = csu_tail_tmp + 1;
+                    ins_state[csu_tail] <= 8'd1;
+                    ins_full[csu_tail] <= ins_issued;
+                    ins_PC[csu_tail] <= issue_PC;
+                    ins_predicted_resulting_PC[csu_tail] <= issue_predicted_resulting_PC;
+                    ins_opcode[csu_tail] <= issue_opcode;
+                    ins_funct3[csu_tail] <= issue_funct3;
+                    ins_funct7[csu_tail] <= issue_funct7;
+                    ins_imm_val[csu_tail] <= issue_imm_val;
+                    ins_shamt_val[csu_tail] <= issue_shamt_val;
+                    ins_rs1[csu_tail] <= issue_rs1;
+                    ins_rs1_val[csu_tail] <= reg_writen[issue_rs1] ? ins_rd_val[reg_depends_on[issue_rs1]] : rf_rs1_val;
+                    ins_rs2[csu_tail] <= issue_rs2;
+                    ins_rs2_val[csu_tail] <= reg_writen[issue_rs2] ? ins_rd_val[reg_depends_on[issue_rs2]] : rf_rs2_val;
+                    ins_rd[csu_tail] <= issue_rd;
+                    ins_rd_val[csu_tail] <= 32'b0;
+                    ins_is_compressed_ins[csu_tail] <= issue_is_compressed_ins;
+                    ins_rs1_dependency_satified[csu_tail] <= reg_writen[issue_rs1] ? ins_state[reg_depends_on[issue_rs1]] == 3 : 1'b1;
+                    ins_rs2_dependency_satified[csu_tail] <= reg_writen[issue_rs2] ? ins_state[reg_depends_on[issue_rs2]] == 3 : 1'b1;
+                    reg_writen[issue_rd] <= 1'b1;
+                    reg_depends_on[issue_rd] <= csu_tail;
+                    for (i = 0; i < CSU_SIZE; i = i + 1) begin
+                        ins_rs1_depend_on[i][csu_tail] <= (reg_writen[issue_rs1] && i == reg_depends_on[issue_rs1]);
+                        ins_rs2_depend_on[i][csu_tail] <= (reg_writen[issue_rs2] && i == reg_depends_on[issue_rs2]);
+                    end
+                    if (is_mem_read(issue_opcode) || is_mem_write(issue_opcode)) begin
+                        if (memrw_ins_count == 0) begin
+                            ins_memrw_dependency_satified[csu_tail] <= 1'b1;
+                        end
+                        else begin
+                            ins_memrw_dependency_satified[csu_tail] <= (ins_state[previous_memrw_ins_id] == 3);
+                        end
+                        memrw_ins_count_tmp = memrw_ins_count_tmp + 1;
+                        previous_memrw_ins_id = csu_tail;
+                    end
+                    else begin
+                        ins_memrw_dependency_satified[csu_tail] <= 1'b1;
+                    end
                 end
                 csu_head <= csu_head_tmp;
                 csu_tail <= csu_tail_tmp;
                 ins_count_in_csu <= ins_count_in_csu_tmp;
+                memrw_ins_count <= memrw_ins_count_tmp;
             end
         end
     end
