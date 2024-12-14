@@ -21,21 +21,21 @@ module InstructionCache(
 
     wire currently_have_task = (!fetch_conducting) && is_reading;
     wire [31:0] addr = currently_have_task ? read_addr : insaddr_to_be_fetched;
-    wire no_need_to_fetch = (cached_ins_addr[addr[8:1]] == addr);
+    wire no_need_to_fetch = (cached_ins_addr[addr[ICACHE_SIZE_BITS:1]] == addr);
     assign is_ready = no_need_to_fetch ? 1'b1 : insfetch_task_done;
-    assign read_data = no_need_to_fetch ? cached_ins_data[addr[8:1]] : ins_fetched_from_memory_adaptor;
+    assign read_data = no_need_to_fetch ? cached_ins_data[addr[ICACHE_SIZE_BITS:1]] : ins_fetched_from_memory_adaptor;
     assign request_ins_from_memory_adaptor = currently_have_task && (!no_need_to_fetch);
     assign insaddr_to_be_fetched_from_memory_adaptor = addr;
     assign icache_available = fetch_conducting ? 1'b0 : 1'b1;
 
-    reg [31:0] cached_ins_data [255:0];
-    reg [31:0] cached_ins_addr [255:0];
+    reg [31:0] cached_ins_data [ICACHE_SIZE - 1:0];
+    reg [31:0] cached_ins_addr [ICACHE_SIZE - 1:0];
     reg        fetch_conducting;
     reg [31:0] insaddr_to_be_fetched;
 
     genvar i;
     generate
-        for (i = 0; i < 256; i = i + 1) begin : gen_loop
+        for (i = 0; i < ICACHE_SIZE; i = i + 1) begin : gen_loop
             always @(posedge clk_in) begin
                 if (rst_in) begin
                     // set cached_ins_addr to 0xffffffff

@@ -6,7 +6,7 @@ module Alu(
         input  wire                 flush_pipline,
 
         input  wire                 have_ins,
-        input  wire [ 2:0]          ins_id,
+        input  wire [CSU_SIZE_BITS - 1:0]          ins_id,
         input  wire [31:0]          rs1_val,
         input  wire [31:0]          rs2_val,
         input  wire [31:0]          imm_val,
@@ -19,7 +19,7 @@ module Alu(
 
         output wire [31:0]          alu_res,
         output wire                 alu_rdy,
-        output wire [ 2:0]          res_ins_id,
+        output wire [CSU_SIZE_BITS - 1:0]          res_ins_id,
         output wire [31:0]          completed_alu_resulting_PC,
 
         output  wire                jalr_just_done,
@@ -28,7 +28,7 @@ module Alu(
     wire [ 2:0] ins_length = (is_compressed_ins ? 16'd2 : 16'd4);
     reg [31:0] alu_res_reg;
     reg        alu_rdy_reg;
-    reg [ 2:0] res_ins_id_reg;
+    reg [CSU_SIZE_BITS - 1:0] res_ins_id_reg;
     reg [31:0] completed_alu_resulting_PC_reg;
     reg jalr_just_done_reg;
     assign alu_res = alu_res_reg;

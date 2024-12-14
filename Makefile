@@ -13,7 +13,7 @@ V_SOURCES := $(shell find $(SRC_DIR) -name '*.v')
 
 ONLINE_JUDGE ?= false
 
-IV_FLAGS := -I$(SRC_DIR) -Wall -Wno-timescale
+IV_FLAGS := -I$(SRC_DIR) -Wall -Wno-timescale -g2012
 
 ifeq ($(ONLINE_JUDGE), true)
 IV_FLAGS += -D ONLINE_JUDGE

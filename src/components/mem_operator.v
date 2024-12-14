@@ -6,7 +6,7 @@ module MemOperator(
         input  wire                 flush_pipline,
 
         input  wire                 have_ins,
-        input  wire [ 2:0]          ins_id,
+        input  wire [CSU_SIZE_BITS - 1:0]          ins_id,
         input  wire [31:0]          rs1_val,
         input  wire [31:0]          rs2_val,
         input  wire [31:0]          imm_val,
@@ -19,7 +19,7 @@ module MemOperator(
 
         output wire [31:0]          mo_res,
         output wire                 mo_rdy,
-        output wire [ 2:0]          res_ins_id,
+        output wire [CSU_SIZE_BITS - 1:0]          res_ins_id,
         output wire [31:0]          completed_mo_resulting_PC, // for branch prediction check
 
         output wire                 ma_have_mem_access_task,
