@@ -238,7 +238,7 @@ module CentralScheduleUnit(
                             ins_memrw_dependency_satified[csu_tail] <= (ins_state[previous_memrw_ins_id] == 3);
                         end
                         memrw_ins_count_tmp = memrw_ins_count_tmp + 1;
-                        previous_memrw_ins_id = csu_tail;
+                        previous_memrw_ins_id <= csu_tail;
                     end
                     else begin
                         ins_memrw_dependency_satified[csu_tail] <= 1'b1;
