@@ -146,6 +146,36 @@ module CentralScheduleUnit(
     wire have_ins_to_exec = have_ins_to_exec__[0];
     wire [CSU_SIZE_BITS - 1:0] ins_to_exec_id = ins_to_exec_id__[0];
     wire ins_to_exec_is_memrw = is_mem_read(ins_opcode[ins_to_exec_id]) || is_mem_write(ins_opcode[ins_to_exec_id]);
+    wire can_submit_for_exec = have_ins_to_exec && ((!is_executing_reg) || current_exec_just_done);
+
+    reg                                is_executing_reg;
+    assign is_executing = is_executing_reg;
+    reg                                executing_ins_type_reg; // 0 for alu and 1 for memory operator
+    assign executing_ins_type = executing_ins_type_reg;
+    reg [CSU_SIZE_BITS - 1:0]          exec_ins_id_reg;
+    assign exec_ins_id = exec_ins_id_reg;
+    reg [ 6:0]                         exec_opcode_reg;
+    assign exec_opcode = exec_opcode_reg;
+    reg [ 2:0]                         exec_funct3_reg;
+    assign exec_funct3 = exec_funct3_reg;
+    reg [ 6:0]                         exec_funct7_reg;
+    assign exec_funct7 = exec_funct7_reg;
+    reg [31:0]                         exec_imm_val_reg;
+    assign exec_imm_val = exec_imm_val_reg;
+    reg [ 5:0]                         exec_shamt_val_reg;
+    assign exec_shamt_val = exec_shamt_val_reg;
+    reg [31:0]                         exec_rs1_reg;
+    assign exec_rs1 = exec_rs1_reg;
+    reg [31:0]                         exec_rs2_reg;
+    assign exec_rs2 = exec_rs2_reg;
+    reg [ 4:0]                         exec_rd_reg;
+    assign exec_rd = exec_rd_reg;
+    reg [31:0]                         exec_PC_reg;
+    assign exec_PC = exec_PC_reg;
+    reg                                exec_is_compressed_ins_reg;
+    assign exec_is_compressed_ins = exec_is_compressed_ins_reg;
+
+    wire current_exec_just_done = is_executing_reg && (executing_ins_type_reg ? mo_rdy : alu_rdy);
 
     task initialize_internal_state;
         begin
@@ -184,6 +214,7 @@ module CentralScheduleUnit(
                 ins_rd_val[i] <= 32'b0;
                 ins_is_compressed_ins[i] <= 1'b0;
             end
+            is_executing_reg <= 0;
         end
     endtask
 
@@ -258,6 +289,27 @@ module CentralScheduleUnit(
                     end
                     else begin
                         ins_memrw_dependency_satified[csu_tail] <= 1'b1;
+                    end
+                end
+                if (can_submit_for_exec) begin
+                    ins_state[ins_to_exec_id] <= 2;
+                    is_executing_reg <= 1;
+                    executing_ins_type_reg <= ins_to_exec_is_memrw;
+                    exec_ins_id_reg <= ins_to_exec_id;
+                    exec_opcode_reg <= ins_opcode[ins_to_exec_id];
+                    exec_funct3_reg <= ins_funct3[ins_to_exec_id];
+                    exec_funct7_reg <= ins_funct7[ins_to_exec_id];
+                    exec_imm_val_reg <= ins_imm_val[ins_to_exec_id];
+                    exec_shamt_val_reg <= ins_shamt_val[ins_to_exec_id];
+                    exec_rs1_reg <= ins_rs1_val[ins_to_exec_id];
+                    exec_rs2_reg <= ins_rs2_val[ins_to_exec_id];
+                    exec_rd_reg <= ins_rd[ins_to_exec_id];
+                    exec_PC_reg <= ins_PC[ins_to_exec_id];
+                    exec_is_compressed_ins_reg <= ins_is_compressed_ins[ins_to_exec_id];
+                end
+                if (current_exec_just_done) begin
+                    if (!can_submit_for_exec) begin
+                        is_executing_reg <= 0;
                     end
                 end
                 csu_head <= csu_head_tmp;
