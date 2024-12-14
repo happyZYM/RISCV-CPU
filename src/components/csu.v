@@ -55,6 +55,7 @@ module CentralScheduleUnit(
     ); // This module act as ROB, Reserve Station and Load/Store Buffer
     // output control
     reg flush_pipline_out;
+    assign flush_pipline = flush_pipline_out;
 
 
     // internal data
@@ -68,7 +69,7 @@ module CentralScheduleUnit(
 
     reg [CSU_SIZE_BITS - 1:0] csu_head;
     reg [CSU_SIZE_BITS - 1:0] csu_tail;
-    reg [7:0] ins_state [CSU_SIZE - 1:0]; // 0 -> empty, 1-> recorded
+    reg [7:0] ins_state [CSU_SIZE - 1:0]; // 0 -> empty, 1-> recorded, 2 -> in execution, 3 -> done
     reg [31:0] ins_full [CSU_SIZE - 1:0]; // for debug, no need for real cpu
     reg [31:0] ins_PC [CSU_SIZE - 1:0]; // for debug, no need for real cpu
     reg [31:0] ins_predicted_resulting_PC [CSU_SIZE - 1:0];
@@ -91,6 +92,13 @@ module CentralScheduleUnit(
     reg [ 4:0] ins_rd [CSU_SIZE - 1:0];
     reg [31:0] ins_rd_val [CSU_SIZE - 1:0];
     reg ins_is_compressed_ins [CSU_SIZE - 1:0];
+    reg [31:0] ins_actual_resulting_PC [CSU_SIZE - 1:0];
+
+    wire need_commit = (ins_count_in_csu > 0) && (ins_state[csu_head] == 3);
+    assign rf_is_writing_rd = need_commit;
+    assign rf_rd_reg_id = ins_rd[csu_head];
+    assign rf_rd_val = ins_rd_val[csu_head];
+    wire prediction_failed = (need_commit && (ins_actual_resulting_PC[csu_head] != ins_predicted_resulting_PC[csu_head]));
 
     task initialize_internal_state;
         begin
@@ -139,6 +147,9 @@ module CentralScheduleUnit(
     end
 
     always @(posedge clk_in) begin
+        reg [CSU_SIZE_BITS - 1:0] csu_head_tmp;
+        reg [CSU_SIZE_BITS - 1:0] csu_tail_tmp;
+        reg [7:0] ins_count_in_csu_tmp;
         if (rst_in) begin
             initialize_internal_state;
         end
@@ -147,6 +158,20 @@ module CentralScheduleUnit(
         else begin
             if (flush_pipline_out) begin
                 initialize_internal_state;
+            end
+            else begin
+                csu_head_tmp = csu_head;
+                csu_tail_tmp = csu_tail;
+                ins_count_in_csu_tmp = ins_count_in_csu;
+                flush_pipline_out <= prediction_failed;
+                if (need_commit) begin
+                    ins_count_in_csu_tmp = ins_count_in_csu_tmp - 1;
+                    csu_head_tmp = csu_head_tmp + 1;
+                    ins_state[csu_head] <= 8'd0;
+                end
+                csu_head <= csu_head_tmp;
+                csu_tail <= csu_tail_tmp;
+                ins_count_in_csu <= ins_count_in_csu_tmp;
             end
         end
     end
