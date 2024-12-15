@@ -38,6 +38,8 @@ module IssueManager(
     wire ins_ready;
     wire icache_available;
     wire jalr_just_occured;
+    wire ins_decoding_is_jalr;
+    assign jalr_just_occured = ins_decoding_is_jalr && is_issueing;
     Decoder decoder(
                 .clk_in(clk_in),
                 .rst_in(rst_in),
@@ -52,7 +54,7 @@ module IssueManager(
                 .rs2(rs2),
                 .rd(rd),
                 .offset(current_ins_offset),
-                .is_jalr(jalr_just_occured),
+                .is_jalr(ins_decoding_is_jalr),
                 .is_compressed_ins(is_compressed_ins)
             );
     

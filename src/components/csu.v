@@ -55,7 +55,7 @@ module CentralScheduleUnit(
     ); // This module act as ROB, Reserve Station and Load/Store Buffer
     // internal data
     reg [7:0] ins_count_in_csu;
-    assign issue_space_available = (ins_count_in_csu < 8);
+    assign issue_space_available = (ins_count_in_csu < CSU_SIZE);
 
     reg reg_writen[31:0];
     reg [CSU_SIZE_BITS - 1:0] reg_depends_on [31:0];

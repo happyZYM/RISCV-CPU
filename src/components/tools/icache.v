@@ -22,7 +22,7 @@ module InstructionCache(
     wire currently_have_task = (!fetch_conducting) && is_reading;
     wire [31:0] addr = currently_have_task ? read_addr : insaddr_to_be_fetched;
     wire no_need_to_fetch = (cached_ins_addr[addr[ICACHE_SIZE_BITS:1]] == addr);
-    assign is_ready = no_need_to_fetch ? 1'b1 : insfetch_task_done;
+    assign is_ready = no_need_to_fetch ? is_reading : insfetch_task_done;
     assign read_data = no_need_to_fetch ? cached_ins_data[addr[ICACHE_SIZE_BITS:1]] : ins_fetched_from_memory_adaptor;
     assign request_ins_from_memory_adaptor = currently_have_task && (!no_need_to_fetch);
     assign insaddr_to_be_fetched_from_memory_adaptor = addr;
