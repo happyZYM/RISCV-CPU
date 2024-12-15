@@ -100,52 +100,52 @@ module CentralScheduleUnit(
     assign rf_rs1_reg_id = issue_rs1;
     assign rf_rs2_reg_id = issue_rs2;
 
-    function is_mem_read;
-        input [6:0] opcode;
-        begin
-            is_mem_read = (opcode == 7'b0000011);
+    wire is_mem_read [CSU_SIZE - 1 : 0];
+    genvar i;
+    generate
+        for (i = 0; i < CSU_SIZE; i = i + 1) begin
+            assign is_mem_read[i] = (ins_opcode[i] == 7'b0000011);
         end
-    endfunction
+    endgenerate
 
-    function is_mem_write;
-        input [6:0] opcode;
-        begin
-            is_mem_write = (opcode == 7'b0100011);
+    wire is_mem_write [CSU_SIZE - 1 : 0];
+    generate
+        for (i = 0; i < CSU_SIZE; i = i + 1) begin
+            assign is_mem_write[i] = (ins_opcode[i] == 7'b0100011);
         end
-    endfunction
+    endgenerate
 
-    function ready_for_exec;
-        input [CSU_SIZE_BITS - 1:0] ins_id;
-        begin
-            ready_for_exec = (ins_state[ins_id] == 1)
-                           && ins_rs1_dependency_satified[ins_id]
-                           && ins_rs2_dependency_satified[ins_id]
-                           && ins_memrw_dependency_satified[ins_id]
-                           && ((!is_mem_write(ins_opcode[ins_id])) || ins_id == csu_head);
+    wire ready_for_exec [CSU_SIZE - 1 : 0];
+    generate
+        for (i = 0; i < CSU_SIZE; i = i + 1) begin
+            assign ready_for_exec[i] = (ins_state[i] == 1)
+                   && ins_rs1_dependency_satified[i]
+                   && ins_rs2_dependency_satified[i]
+                   && ins_memrw_dependency_satified[i]
+                   && ((!is_mem_write[i]) || i == csu_head);
         end
-    endfunction
+    endgenerate
 
     wire have_ins_to_exec__ [CSU_SIZE - 1 : 0];
     wire [CSU_SIZE_BITS - 1:0] ins_to_exec_id__ [CSU_SIZE - 1 : 0];
 
     generate
-        genvar i;
         for (i = HALF_CSU_SIZE; i < CSU_SIZE; i = i + 1) begin
-            assign have_ins_to_exec__[i] = ready_for_exec(i);
-            assign ins_to_exec_id__[i] = ready_for_exec(i) ? i : 0;
+            assign have_ins_to_exec__[i] = ready_for_exec[i];
+            assign ins_to_exec_id__[i] = ready_for_exec[i] ? i : 0;
         end
-        for (i = 1; HALF_CSU_SIZE < HALF_CSU_SIZE; i = i + 1) begin
-            assign have_ins_to_exec__[i] = ready_for_exec(i) || have_ins_to_exec__[i<<1] || have_ins_to_exec__[(i<<1)|1];
-            assign ins_to_exec_id__[i] = ready_for_exec(i) ? i :
+        for (i = 1; i < HALF_CSU_SIZE; i = i + 1) begin
+            assign have_ins_to_exec__[i] = ready_for_exec[i] || have_ins_to_exec__[i<<1] || have_ins_to_exec__[(i<<1)|1];
+            assign ins_to_exec_id__[i] = ready_for_exec[i] ? i :
                    have_ins_to_exec__[i<<1] ? ins_to_exec_id__[i<<1] : ins_to_exec_id__[(i<<1)|1];
         end
-        assign have_ins_to_exec__[0] = ready_for_exec(0) || have_ins_to_exec__[1];
-        assign ins_to_exec_id__[0] = ready_for_exec(0) ? 0 : ins_to_exec_id__[1];
+        assign have_ins_to_exec__[0] = ready_for_exec[0] || have_ins_to_exec__[1];
+        assign ins_to_exec_id__[0] = ready_for_exec[0] ? 0 : ins_to_exec_id__[1];
     endgenerate
 
     wire have_ins_to_exec = have_ins_to_exec__[0];
     wire [CSU_SIZE_BITS - 1:0] ins_to_exec_id = ins_to_exec_id__[0];
-    wire ins_to_exec_is_memrw = is_mem_read(ins_opcode[ins_to_exec_id]) || is_mem_write(ins_opcode[ins_to_exec_id]);
+    wire ins_to_exec_is_memrw = is_mem_read[ins_to_exec_id] || is_mem_write[ins_to_exec_id];
     wire can_submit_for_exec = have_ins_to_exec && ((!is_executing_reg) || current_exec_just_done);
 
     reg                                is_executing_reg;
@@ -250,7 +250,7 @@ module CentralScheduleUnit(
                         reg_writen[ins_rd[csu_head]] <= 1'b0;
                         reg_depends_on[ins_rd[csu_head]] <= 0;
                     end
-                    if (is_mem_read(ins_opcode[csu_head]) || is_mem_write(ins_opcode[csu_head])) begin
+                    if (is_mem_read[csu_head] || is_mem_write[csu_head]) begin
                         memrw_ins_count_tmp = memrw_ins_count_tmp - 1;
                     end
                 end
@@ -279,7 +279,7 @@ module CentralScheduleUnit(
                     reg_depends_on[issue_rd] <= csu_tail;
                     ins_rs1_depend_on[csu_tail] <= (reg_writen[issue_rs1] ? reg_depends_on[issue_rs1] : 0);
                     ins_rs2_depend_on[csu_tail] <= (reg_writen[issue_rs2] ? reg_depends_on[issue_rs2] : 0);
-                    if (is_mem_read(issue_opcode) || is_mem_write(issue_opcode)) begin
+                    if (issue_opcode == 7'b0000011 || issue_opcode == 7'b0100011) begin
                         if (memrw_ins_count == 0) begin
                             ins_memrw_dependency_satified[csu_tail] <= 1'b1;
                         end
