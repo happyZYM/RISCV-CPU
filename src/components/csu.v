@@ -246,7 +246,7 @@ module CentralScheduleUnit(
                     ins_count_in_csu_tmp = ins_count_in_csu_tmp - 1;
                     csu_head_tmp = csu_head_tmp + 1;
                     ins_state[csu_head] <= 8'd0;
-                    if (reg_writen[ins_rd[csu_head]] && !(ins_just_issued && issue_rd == ins_rd[csu_head])) begin
+                    if (reg_writen[ins_rd[csu_head]] && reg_depends_on[ins_rd[csu_head]] == csu_head && !(ins_just_issued && issue_rd == ins_rd[csu_head])) begin
                         reg_writen[ins_rd[csu_head]] <= 1'b0;
                         reg_depends_on[ins_rd[csu_head]] <= 0;
                     end
