@@ -82,7 +82,7 @@ always @(posedge clk)
     q_addr_a <= addr_a;
   end
 
-assign dout_a = ram[addr_a];
+assign dout_a = ram[q_addr_a];
 
 // initialize ram content (for simulation)
 integer i;

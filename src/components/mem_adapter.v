@@ -59,9 +59,12 @@ module MemAdapter(
     wire [7:0] mo_read_byte2 = is_lw ? mo_read_byte2_stored : 8'b0;
     wire [7:0] mo_read_byte3 = is_lw ? mem_din : 8'b0;
     assign mem_access_data_out = {mo_read_byte3, mo_read_byte2, mo_read_byte1, mo_read_byte0};
-    assign mem_access_task_done = (is_lw || is_sw) ? mo_task_state == 7'b0000101 :
-           (is_lh || is_sh) ? mo_task_state == 7'b0000011 :
-           (is_lb || is_sb) ? mo_task_state == 7'b0000010 : 0;
+    assign mem_access_task_done = is_lw ? mo_task_state == 7'b0000110 :
+           is_sw ? mo_task_state == 7'b0000101 :
+           is_lh ? mo_task_state == 7'b0000100 :
+           is_sh ? mo_task_state == 7'b0000011 :
+           is_lb ? mo_task_state == 7'b0000011 :
+           is_sb ? mo_task_state == 7'b0000010 : 0;
 
     wire new_ifetch_task = ifetch_task_state == 0 && try_start_insfetch_task;
     wire ifetch_task_pending = (ifetch_task_state == 1) || new_ifetch_task;
@@ -72,7 +75,7 @@ module MemAdapter(
     wire ifetch_task_running = (ifetch_task_state[7:1] != 7'b0000000);
     reg [7:0] ifetch_task_state; // 0 -> idle, 1 -> pending
     reg [31:0] ifetch_task_addr;
-    wire is_compressed_ins = (ifetch_task_state >= 3) && (ifetch_read_byte0_stored[1:0] != 2'b11);
+    wire is_compressed_ins = (ifetch_task_state >= 4) && (ifetch_read_byte0_stored[1:0] != 2'b11);
     reg [7:0] ifetch_read_byte0_stored;
     reg [7:0] ifetch_read_byte1_stored;
     reg [7:0] ifetch_read_byte2_stored;
@@ -81,7 +84,7 @@ module MemAdapter(
     wire [7:0] ifetch_read_byte2 = is_compressed_ins ? 8'b0 : ifetch_read_byte2_stored;
     wire [7:0] ifetch_read_byte3 = is_compressed_ins ? 8'b0 : mem_din;
     assign insfetch_ins_full = {ifetch_read_byte3, ifetch_read_byte2, ifetch_read_byte1, ifetch_read_byte0};
-    assign insfetch_task_done = is_compressed_ins ? ifetch_task_state == 7'b0000011 : ifetch_task_state == 7'b0000101;
+    assign insfetch_task_done = is_compressed_ins ? ifetch_task_state == 7'b0000100 : ifetch_task_state == 7'b0000110;
 
     wire no_task_running = (ifetch_task_state[7:1] == 7'b0000000) && (mo_task_state[7:1] == 7'b0000000);
     wire launch_mo_task = no_task_running && mo_task_pending;
@@ -119,28 +122,41 @@ module MemAdapter(
                     mo_task_state <= 8'b00000001;
                 end
                 if (mo_task_state == 8'b00000010 && mo_last_task_ok) begin
-                    if (mo_data_size == 0) begin
+                    if (mem_access_task_done) begin
                         mo_task_state <= 8'b00000000;
                     end
                     else begin
                         mo_task_state <= 8'b00000011;
-                        mo_read_byte0_stored <= mem_din;
                     end
                 end
                 if (mo_task_state == 8'b00000011 && mo_last_task_ok) begin
-                    if (mo_data_size == 2'b01) begin
+                    if (mem_access_task_done) begin
                         mo_task_state <= 8'b00000000;
                     end
                     else begin
                         mo_task_state <= 8'b00000100;
-                        mo_read_byte1_stored <= mem_din;
+                        mo_read_byte0_stored <= mem_din;
                     end
                 end
                 if (mo_task_state == 8'b00000100 && mo_last_task_ok) begin
-                    mo_task_state <= 8'b00000101;
-                    mo_read_byte2_stored <= mem_din;
+                    if (mem_access_task_done) begin
+                        mo_task_state <= 8'b00000000;
+                    end
+                    else begin
+                        mo_task_state <= 8'b00000101;
+                        mo_read_byte1_stored <= mem_din;
+                    end
                 end
                 if (mo_task_state == 8'b00000101 && mo_last_task_ok) begin
+                    if (mem_access_task_done) begin
+                        mo_task_state <= 8'b00000000;
+                    end
+                    else begin
+                        mo_task_state <= 8'b00000110;
+                        mo_read_byte2_stored <= mem_din;
+                    end
+                end
+                if (mo_task_state == 8'b00000110 && mo_last_task_ok) begin
                     mo_task_state <= 8'b00000000;
                 end
 
@@ -152,22 +168,25 @@ module MemAdapter(
                 end
                 if (ifetch_task_state == 8'b00000010) begin
                     ifetch_task_state <= 8'b00000011;
-                    ifetch_read_byte0_stored <= mem_din;
                 end
                 if (ifetch_task_state == 8'b00000011) begin
+                    ifetch_task_state <= 8'b00000100;
+                    ifetch_read_byte0_stored <= mem_din;
+                end
+                if (ifetch_task_state == 8'b00000100) begin
                     if (insfetch_task_done) begin
                         ifetch_task_state <= 8'b00000000;
                     end
                     else begin
-                        ifetch_task_state <= 8'b00000100;
+                        ifetch_task_state <= 8'b00000101;
                         ifetch_read_byte1_stored <= mem_din;
                     end
                 end
-                if (ifetch_task_state == 8'b00000100) begin
-                    ifetch_task_state <= 8'b00000101;
+                if (ifetch_task_state == 8'b00000101) begin
+                    ifetch_task_state <= 8'b00000110;
                     ifetch_read_byte2_stored <= mem_din;
                 end
-                if (ifetch_task_state == 8'b00000101) begin
+                if (ifetch_task_state == 8'b00000110) begin
                     ifetch_task_state <= 8'b00000000;
                 end
             end
