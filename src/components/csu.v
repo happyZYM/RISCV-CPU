@@ -271,7 +271,11 @@ module CentralScheduleUnit(
                     ins_rd[csu_tail] <= issue_rd;
                     ins_rd_val[csu_tail] <= 32'b0;
                     ins_is_compressed_ins[csu_tail] <= issue_is_compressed_ins;
-                    if (current_exec_just_done && reg_writen[issue_rs1] && reg_depends_on[issue_rs1] == just_done_ins_id) begin
+                    if (issue_rs1 == 0) begin
+                        ins_rs1_val[csu_tail] <= 32'b0;
+                        ins_rs1_dependency_satified[csu_tail] <= 1'b1;
+                    end
+                    else if (current_exec_just_done && reg_writen[issue_rs1] && reg_depends_on[issue_rs1] == just_done_ins_id) begin
                         ins_rs1_dependency_satified[csu_tail] <= 1;
                         ins_rs1_val[csu_tail] <= just_done_res;
                     end
@@ -279,7 +283,11 @@ module CentralScheduleUnit(
                         ins_rs1_val[csu_tail] <= reg_writen[issue_rs1] ? ins_rd_val[reg_depends_on[issue_rs1]] : rf_rs1_val;
                         ins_rs1_dependency_satified[csu_tail] <= reg_writen[issue_rs1] ? ins_state[reg_depends_on[issue_rs1]] == 3 : 1'b1;
                     end
-                    if (current_exec_just_done && reg_writen[issue_rs2] && reg_depends_on[issue_rs2] == just_done_ins_id) begin
+                    if (issue_rs2 == 0) begin
+                        ins_rs2_val[csu_tail] <= 32'b0;
+                        ins_rs2_dependency_satified[csu_tail] <= 1'b1;
+                    end
+                    else if (current_exec_just_done && reg_writen[issue_rs2] && reg_depends_on[issue_rs2] == just_done_ins_id) begin
                         ins_rs2_dependency_satified[csu_tail] <= 1;
                         ins_rs2_val[csu_tail] <= just_done_res;
                     end
