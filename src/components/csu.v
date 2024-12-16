@@ -304,8 +304,13 @@ module CentralScheduleUnit(
                             ins_memrw_dependency_satified[csu_tail] <= 1'b1;
                         end
                         else begin
-                            ins_memrw_dependency_satified[csu_tail] <= (ins_state[previous_memrw_ins_id] == 3);
-                            ins_memrw_depend_on[csu_tail] <= previous_memrw_ins_id;
+                            if (current_exec_just_done && previous_memrw_ins_id == just_done_ins_id) begin
+                                ins_memrw_dependency_satified[csu_tail] <= 1'b1;
+                            end
+                            else begin
+                                ins_memrw_dependency_satified[csu_tail] <= (ins_state[previous_memrw_ins_id] == 3);
+                                ins_memrw_depend_on[csu_tail] <= previous_memrw_ins_id;
+                            end
                         end
                         memrw_ins_count_tmp = memrw_ins_count_tmp + 1;
                         previous_memrw_ins_id <= csu_tail;
