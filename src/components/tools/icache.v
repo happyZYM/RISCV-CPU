@@ -33,21 +33,13 @@ module InstructionCache(
     reg        fetch_conducting;
     reg [31:0] insaddr_to_be_fetched;
 
-    genvar i;
-    generate
-        for (i = 0; i < ICACHE_SIZE; i = i + 1) begin : gen_loop
-            always @(posedge clk_in) begin
-                if (rst_in) begin
-                    // set cached_ins_addr to 0xffffffff
-                    cached_ins_addr[i] <= 32'hffffffff;
-                end
-            end
-        end
-    endgenerate
-
-    always @(posedge clk_in) begin
+    always @(posedge clk_in) begin : icache_main_working_block
+        integer i;
         if (rst_in) begin
             fetch_conducting <= 1'b0;
+            for (i = 0; i < ICACHE_SIZE; i = i + 1) begin
+                cached_ins_addr[i] <= 32'hffffffff;
+            end
         end
         else if (!rdy_in) begin
         end

@@ -181,7 +181,7 @@ module CentralScheduleUnit(
     wire [31:0] just_done_completed_resulting_PC = executing_ins_type_reg ? mo_completed_mo_resulting_PC : alu_completed_alu_resulting_PC;
 
     task initialize_internal_state;
-        begin
+        begin : initialize_internal_state_main_block
             integer i;
             integer j;
             ins_count_in_csu <= 8'd0;
@@ -221,13 +221,12 @@ module CentralScheduleUnit(
         end
     endtask
 
-    always @(posedge clk_in) begin
+    always @(posedge clk_in) begin : csu_main_working_block
         reg [CSU_SIZE_BITS - 1:0] csu_head_tmp;
         reg [CSU_SIZE_BITS - 1:0] csu_tail_tmp;
         reg [7:0] ins_count_in_csu_tmp;
         reg [7:0] memrw_ins_count_tmp;
         integer i;
-        integer j;
         if (rst_in) begin
             initialize_internal_state;
         end

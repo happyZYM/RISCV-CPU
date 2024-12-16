@@ -75,21 +75,27 @@ module Alu(
 
             // Branch instructions
             17'b0000000_000_1100011: begin // BEQ
+                alu_res_reg = 0;
                 completed_alu_resulting_PC_reg = (rs1_val == rs2_val) ? request_PC + imm_val : request_PC + ins_length;
             end
             17'b0000000_001_1100011: begin // BNE
+                alu_res_reg = 0;
                 completed_alu_resulting_PC_reg = (rs1_val != rs2_val) ? request_PC + imm_val : request_PC + ins_length;
             end
             17'b0000000_100_1100011: begin // BLT
+                alu_res_reg = 0;
                 completed_alu_resulting_PC_reg = ($signed(rs1_val) < $signed(rs2_val)) ? request_PC + imm_val : request_PC + ins_length;
             end
             17'b0000000_101_1100011: begin // BGE
+                alu_res_reg = 0;
                 completed_alu_resulting_PC_reg = ($signed(rs1_val) >= $signed(rs2_val)) ? request_PC + imm_val : request_PC + ins_length;
             end
             17'b0000000_110_1100011: begin // BLTU
+                alu_res_reg = 0;
                 completed_alu_resulting_PC_reg = (rs1_val < rs2_val) ? request_PC + imm_val : request_PC + ins_length;
             end
             17'b0000000_111_1100011: begin // BGEU
+                alu_res_reg = 0;
                 completed_alu_resulting_PC_reg = (rs1_val >= rs2_val) ? request_PC + imm_val : request_PC + ins_length;
             end
 
@@ -172,6 +178,11 @@ module Alu(
             end
             17'b0000000_111_0110011: begin // AND
                 alu_res_reg = rs1_val & rs2_val;
+                completed_alu_resulting_PC_reg = request_PC + ins_length;
+            end
+
+            default: begin
+                alu_res_reg = 32'b0;
                 completed_alu_resulting_PC_reg = request_PC + ins_length;
             end
         endcase

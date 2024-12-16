@@ -44,7 +44,6 @@ module MemAdapter(
     reg mo_task_rw;
     reg [31:0] mo_task_addr;
     reg [31:0] mo_data_to_write;
-    reg [31:0] mo_data_to_read;
     reg [1:0] mo_data_size;
     wire is_lb = (mo_task_rw == 0) && (mo_data_size == 2'b00);
     wire is_lh = (mo_task_rw == 0) && (mo_data_size == 2'b01);

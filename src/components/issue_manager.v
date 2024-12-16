@@ -32,7 +32,6 @@ module IssueManager(
     wire [31:0]  current_ins_offset;
     reg [31:0] current_PC;
     reg is_waiting_for_jalr;
-    reg have_ins_processing;
     wire [31:0] ins_data;
 
     wire ins_ready;
