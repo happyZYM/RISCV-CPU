@@ -21,7 +21,11 @@ module RegisterFile(
     assign rs2_val = (rs2_reg_id == 0) ? 0 : reg_file[rs2_reg_id];
 
     always @(posedge clk_in) begin
+        integer i;
         if (rst_in) begin
+            for (i = 0; i < 32; i = i + 1) begin
+                reg_file[i] <= 32'h0;
+            end
         end
         else if (!rdy_in) begin
         end

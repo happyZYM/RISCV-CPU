@@ -128,7 +128,7 @@ module IssueManager(
         else if (!rdy_in) begin
         end
         else begin
-            is_issueing_reg <= is_issueing_tmp;
+            is_issueing_reg <= flush_pipline ? 0 : is_issueing_tmp;
             issue_PC_reg <= issue_PC_tmp;
             predicted_resulting_PC_reg <= predicted_resulting_PC_tmp;
             full_ins_reg <= full_ins_tmp;
