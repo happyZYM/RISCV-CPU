@@ -55,7 +55,7 @@ module CentralScheduleUnit(
     ); // This module act as ROB, Reserve Station and Load/Store Buffer
     // internal data
     reg [7:0] ins_count_in_csu;
-    assign issue_space_available = (ins_count_in_csu < CSU_SIZE);
+    assign issue_space_available = (ins_count_in_csu < CSU_COMMIT_THERSHOLD);
 
     reg reg_writen[31:0];
     reg [CSU_SIZE_BITS - 1:0] reg_depends_on [31:0];
@@ -116,13 +116,15 @@ module CentralScheduleUnit(
     endgenerate
 
     wire ready_for_exec [CSU_SIZE - 1 : 0];
+    wire [31:0] memrw_addr_ifis [CSU_SIZE - 1 : 0];
     generate
         for (i = 0; i < CSU_SIZE; i = i + 1) begin
+            assign memrw_addr_ifis[i] = ins_rs1_val[i] + ins_imm_val[i];
             assign ready_for_exec[i] = (ins_state[i] == 1)
                    && ins_rs1_dependency_satified[i]
                    && ins_rs2_dependency_satified[i]
                    && ins_memrw_dependency_satified[i]
-                   && ((!is_mem_write[i]) || i == csu_head);
+                   && (((!is_mem_write[i]) && !((is_mem_write[i] || is_mem_read[i]) && memrw_addr_ifis[i][17:16] == 2'b11)) || i == csu_head);
         end
     endgenerate
 
