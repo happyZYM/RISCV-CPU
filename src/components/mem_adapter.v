@@ -38,7 +38,7 @@ module MemAdapter(
            mo_task_state == 3 ? mo_data_to_write[15:8] :
            mo_task_state == 4 ? mo_data_to_write[23:16] :
            mo_task_state == 5 ? mo_data_to_write[31:24] : 8'b0;
-    wire can_write = (mem_a[17:16]!=2'b11) || (~io_buffer_full);
+    wire can_write = (mo_mem_a_control[17:16]!=2'b11) || (!io_buffer_full);
     wire mo_last_task_ok = (mo_task_rw == 0) || can_write;
     reg [7:0] mo_task_state;
     reg mo_task_rw;
@@ -59,12 +59,12 @@ module MemAdapter(
     wire [7:0] mo_read_byte2 = is_lw ? mo_read_byte2_stored : 8'b0;
     wire [7:0] mo_read_byte3 = is_lw ? mem_din : 8'b0;
     assign mem_access_data_out = {mo_read_byte3, mo_read_byte2, mo_read_byte1, mo_read_byte0};
-    assign mem_access_task_done = is_lw ? mo_task_state == 7'b0000110 :
+    assign mem_access_task_done = mo_last_task_ok && (is_lw ? mo_task_state == 7'b0000110 :
            is_sw ? mo_task_state == 7'b0000101 :
            is_lh ? mo_task_state == 7'b0000100 :
            is_sh ? mo_task_state == 7'b0000011 :
            is_lb ? mo_task_state == 7'b0000011 :
-           is_sb ? mo_task_state == 7'b0000010 : 0;
+           is_sb ? mo_task_state == 7'b0000010 : 0);
 
     wire new_ifetch_task = ifetch_task_state == 0 && try_start_insfetch_task;
     wire ifetch_task_pending = (ifetch_task_state == 1) || new_ifetch_task;
