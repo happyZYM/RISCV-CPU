@@ -89,7 +89,7 @@ module MemAdapter(
     wire no_task_running = (ifetch_task_state[7:1] == 7'b0000000) && (mo_task_state[7:1] == 7'b0000000);
     wire launch_mo_task = no_task_running && mo_task_pending;
     wire launch_ifetch_task = no_task_running && ifetch_task_pending && (!mo_task_pending);
-    assign mem_a = mo_task_running ? mo_mem_a_control : ifetch_task_running ? ifetch_mem_a_control : 32'h0;
+    assign mem_a = mo_task_running ? (mo_last_task_ok ? mo_mem_a_control : 0) : ifetch_task_running ? ifetch_mem_a_control : 32'h0;
     assign mem_wr = mo_task_running ? (mo_task_rw && can_write) : 1'b0;
 
     always @(posedge clk_in) begin
