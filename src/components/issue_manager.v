@@ -29,78 +29,29 @@ module IssueManager(
         output wire [31:0]          insaddr_to_be_fetched_from_memory_adaptor
     );
     // output control
-    reg                 is_issueing_reg;
-    assign is_issueing = is_issueing_reg;
-    reg [31:0]          issue_PC_reg;
-    assign issue_PC = issue_PC_reg;
-    reg [31:0]          predicted_resulting_PC_reg;
-    assign predicted_resulting_PC = predicted_resulting_PC_reg;
-    reg [31:0]          full_ins_reg;
-    assign full_ins = full_ins_reg;
-    reg [ 6:0]          opcode_reg;
-    assign opcode = opcode_reg;
-    reg [ 2:0]          funct3_reg;
-    assign funct3 = funct3_reg;
-    reg [ 6:0]          funct7_reg;
-    assign funct7 = funct7_reg;
-    reg [31:0]          imm_val_reg;
-    assign imm_val = imm_val_reg;
-    reg [ 5:0]          shamt_val_reg;
-    assign shamt_val = shamt_val_reg;
-    reg [ 4:0]          rs1_reg;
-    assign rs1 = rs1_reg;
-    reg [ 4:0]          rs2_reg;
-    assign rs2 = rs2_reg;
-    reg [ 4:0]          rd_reg;
-    assign rd = rd_reg;
-    reg                 is_compressed_ins_reg;
-    assign is_compressed_ins = is_compressed_ins_reg;
-    wire                 is_issueing_tmp;
-    wire [31:0]          issue_PC_tmp;
-    wire [31:0]          predicted_resulting_PC_tmp;
-    wire [31:0]          full_ins_tmp;
-    wire [ 6:0]          opcode_tmp;
-    wire [ 2:0]          funct3_tmp;
-    wire [ 6:0]          funct7_tmp;
-    wire [31:0]          imm_val_tmp;
-    wire [ 5:0]          shamt_val_tmp;
-    wire [ 4:0]          rs1_tmp;
-    wire [ 4:0]          rs2_tmp;
-    wire [ 4:0]          rd_tmp;
-    wire                 is_compressed_ins_tmp;
-
-    wire [31:0]  current_ins_offset;
     reg [31:0] current_PC;
     reg is_waiting_for_jalr;
-    wire [31:0] ins_data;
 
     wire ins_ready;
     wire icache_available;
     wire jalr_just_occured;
     wire ins_decoding_is_jalr;
-    assign jalr_just_occured = ins_decoding_is_jalr && ins_ready;
-    Decoder decoder(
-                .clk_in(clk_in),
-                .rst_in(rst_in),
-                .rdy_in(rdy_in),
-                .ins(ins_data),
-                .opcode(opcode_tmp),
-                .funct3(funct3_tmp),
-                .funct7(funct7_tmp),
-                .imm_val(imm_val_tmp),
-                .shamt_val(shamt_val_tmp),
-                .rs1(rs1_tmp),
-                .rs2(rs2_tmp),
-                .rd(rd_tmp),
-                .offset(current_ins_offset),
-                .is_jalr(ins_decoding_is_jalr),
-                .is_compressed_ins(is_compressed_ins_tmp)
-            );
-
-    assign full_ins_tmp = ins_data;
+    assign jalr_just_occured = ic_is_jalr && ins_ready;
 
     wire try_fetch = (~is_waiting_for_jalr) & issue_space_available & icache_available;
-    InstructionCache cache(
+    wire [31:0] ic_ins_data;
+    wire [31:0] ic_predicted_resulting_PC;
+    wire [ 6:0] ic_opcode;
+    wire [ 2:0] ic_funct3;
+    wire [ 6:0] ic_funct7;
+    wire [31:0] ic_imm_val;
+    wire [ 5:0] ic_shamt_val;
+    wire [ 4:0] ic_rs1;
+    wire [ 4:0] ic_rs2;
+    wire [ 4:0] ic_rd;
+    wire        ic_is_compressed_ins;
+    wire        ic_is_jalr;
+    InstructionCache icache(
                          .clk_in(clk_in),
                          .rst_in(rst_in),
                          .rdy_in(rdy_in),
@@ -113,12 +64,33 @@ module IssueManager(
                          .read_addr(current_PC),
                          .is_ready(ins_ready),
                          .icache_available(icache_available),
-                         .read_data(ins_data)
+                         .ins_data(ic_ins_data),
+                         .predicted_resulting_PC(ic_predicted_resulting_PC),
+                         .opcode(ic_opcode),
+                         .funct3(ic_funct3),
+                         .funct7(ic_funct7),
+                         .imm_val(ic_imm_val),
+                         .shamt_val(ic_shamt_val),
+                         .rs1(ic_rs1),
+                         .rs2(ic_rs2),
+                         .rd(ic_rd),
+                         .is_compressed_ins(ic_is_compressed_ins),
+                         .is_jalr(ic_is_jalr)
                      );
 
-    assign is_issueing_tmp = ins_ready;
-    assign issue_PC_tmp = current_PC;
-    assign predicted_resulting_PC_tmp = current_PC + current_ins_offset;
+    assign is_issueing = ins_ready;
+    assign issue_PC = current_PC;
+    assign predicted_resulting_PC = ic_predicted_resulting_PC;
+    assign full_ins = ic_ins_data;
+    assign opcode = ic_opcode;
+    assign funct3 = ic_funct3;
+    assign funct7 = ic_funct7;
+    assign imm_val = ic_imm_val;
+    assign shamt_val = ic_shamt_val;
+    assign rs1 = ic_rs1;
+    assign rs2 = ic_rs2;
+    assign rd = ic_rd;
+    assign is_compressed_ins = ic_is_compressed_ins;
 
     always @(posedge clk_in) begin
         if (rst_in) begin
@@ -128,19 +100,6 @@ module IssueManager(
         else if (!rdy_in) begin
         end
         else begin
-            is_issueing_reg <= flush_pipline ? 0 : is_issueing_tmp;
-            issue_PC_reg <= issue_PC_tmp;
-            predicted_resulting_PC_reg <= predicted_resulting_PC_tmp;
-            full_ins_reg <= full_ins_tmp;
-            opcode_reg <= opcode_tmp;
-            funct3_reg <= funct3_tmp;
-            funct7_reg <= funct7_tmp;
-            imm_val_reg <= imm_val_tmp;
-            shamt_val_reg <= shamt_val_tmp;
-            rs1_reg <= rs1_tmp;
-            rs2_reg <= rs2_tmp;
-            rd_reg <= rd_tmp;
-            is_compressed_ins_reg <= is_compressed_ins_tmp;
             if (flush_pipline) begin
                 current_PC <= reset_PC_to;
                 is_waiting_for_jalr <= 1'b0;
@@ -150,7 +109,7 @@ module IssueManager(
                 is_waiting_for_jalr <= 1'b0;
             end
             else if (ins_ready) begin
-                current_PC <= predicted_resulting_PC_tmp;
+                current_PC <= ic_predicted_resulting_PC;
                 is_waiting_for_jalr <= jalr_just_occured;
             end
         end

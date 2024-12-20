@@ -1,9 +1,11 @@
 module Decoder(
-        input  wire                 clk_in,			// system clock signal
-        input  wire                 rst_in,			// reset signal
-        input  wire	                rdy_in,	        // ready signal, pause cpu when low
+        input  wire                 clk_in,  // system clock signal
+        input  wire                 rst_in,  // reset signal
+        input  wire                 rdy_in,   // ready signal, pause cpu when low
 
         input  wire [31:0]          ins,
+        input wire                  have_decoding_task,
+        output wire                 decoding_done,
 
         output wire [ 6:0]          opcode,
         output wire [ 2:0]          funct3,
@@ -17,6 +19,7 @@ module Decoder(
         output wire                 is_jalr,
         output wire                 is_compressed_ins
     ); // decode and translate compressed instruction
+    assign decoding_done = have_decoding_task;
     wire is_compressed = (ins[1:0] != 2'b11);
     assign is_compressed_ins = is_compressed;
     wire [ 6:0] opcode_normal;
