@@ -55,7 +55,8 @@ module CentralScheduleUnit(
     ); // This module act as ROB, Reserve Station and Load/Store Buffer
     // internal data
     reg [7:0] ins_count_in_csu;
-    assign issue_space_available = (ins_count_in_csu < CSU_COMMIT_THERSHOLD);
+    reg issue_space_available_reg;
+    assign issue_space_available = issue_space_available_reg;
 
     reg reg_writen[31:0];
     reg [CSU_SIZE_BITS - 1:0] reg_depends_on [31:0];
@@ -187,6 +188,7 @@ module CentralScheduleUnit(
             integer i;
             integer j;
             ins_count_in_csu <= 8'd0;
+            issue_space_available_reg <= 1'b1;
             for (i = 0; i < 32; i = i + 1) begin
                 reg_writen[i] <= 1'b0;
                 reg_depends_on[i] <= 0;
@@ -239,6 +241,7 @@ module CentralScheduleUnit(
                 initialize_internal_state;
             end
             else begin
+                issue_space_available_reg <= (ins_count_in_csu < CSU_COMMIT_THERSHOLD);
                 csu_head_tmp = csu_head;
                 csu_tail_tmp = csu_tail;
                 ins_count_in_csu_tmp = ins_count_in_csu;

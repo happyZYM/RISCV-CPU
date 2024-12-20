@@ -20,7 +20,7 @@ module RegisterFile(
     assign rs1_val = (rs1_reg_id == 0) ? 0 : reg_file[rs1_reg_id];
     assign rs2_val = (rs2_reg_id == 0) ? 0 : reg_file[rs2_reg_id];
 
-    always @(posedge clk_in) begin
+    always @(posedge clk_in) begin : register_file_main_working_block
         integer i;
         if (rst_in) begin
             for (i = 0; i < 32; i = i + 1) begin
