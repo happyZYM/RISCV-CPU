@@ -6,5 +6,6 @@ __pycache__/
 /vivado_project
 /user
 /prj
+/fpga/fpga
 
 *.log
